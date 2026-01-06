@@ -1,0 +1,32 @@
+To enable the evaluation of HPE models and the development of exercise feedback systems, we produced a new rehabilitation dataset (REHAB24-6). The main focus is on a diverse range of exercises, views, body heights, lighting conditions, and exercise mistakes. With the publicly available RGB videos, skeleton sequences, repetition segmentation, and exercise correctness labels, this dataset offers the most comprehensive testbed for exercise-correctness-related tasks.
+
+Contents
+65 recordings (184,825 frames, 30 FPS):
+RGB videos from two cameras (videos.zip, horizontal = Camera17, vertical = Camera18);
+3D and 2D projected positions of 41 motion capture marker (<2/3>d_markers.zip, marker labels in marker_names.txt);
+3D and 2D projected positions of 26 skeleton joints (<2/3>d_joints.zip, joint labels in joint_names.txt);
+Annotation of 1,072 exercise repetitions (Segmentation.csv, indexed based only on 30 FPS data, described in Segmentation.txt):
+Temporal segmentation (start/end frame, most between 2–5 seconds);
+Binary correctness label (around 90 from each category in each exercise, except Ex3 with around 50);
+Exercise direction (around 90 from each direction in each exercise);
+Lighting conditions label.
+Recording Conditions
+Our laboratory setup included 18 synchronized sensors (2 RGB video cameras, 16 ultra-wide motion capture cameras) spread around an 8.2 × 7 m room. The RGB cameras were located in the corners of the room, one in a horizontal position (hor.), providing a larger field of view (FoV), and one in a vertical (ver.), resulting in a narrower FoV. Both types of cameras were synchronized with a sampling frequency of 30 frames per second (FPS).
+
+The subjects wore motion capture body suits with 41 markers attached to them, which were detected by optical cameras. The OptiTrack Motive 2.3.0 software inferred the 3D positions of the markers in virtual centimeters and converted them into a skeleton with 26 joints, forming our human pose 3D ground truth (GT).
+
+To acquire a 2D version of the ground truth in pixel coordinates, we applied a projection of the virtual coordinates into the camera using the simplified pinhole model. We estimated the parameters for this projection as follows. First, the virtual position of the cameras was estimated using measuring tape and knowledge of the virtual origin. Then, the orientation of the cameras was optimized by matching the virtual marker positions with their position in the videos.
+
+We also simulated changes in lighting conditions: a few videos were shot in the natural evening light, which resulted in worse visibility, while the rest were under artificial lighting.
+
+Exercises
+10 subjects participated in our recording and consented to release the data publicly: 6 males and 4 females of different ages (from 25 to 50) and fitness levels. A physiotherapist instructed the subjects on how to perform the exercises so that at least five repetitions were done in what he deemed the correct way and five more incorrectly. The participants had a certain degree of freedom, e.g., in which leg they used in Ex4 and Ex5. Similarly, the physiotherapist suggested different exercise mistakes for each subject.
+
+Ex1 = Arm abduction: sideway raising of the straightened right arm;
+Ex2 = Arm VW: fluent transition of arms between V (arms straight up) and W (elbows down, hands up) shape;
+Ex3 = Push-ups: push-ups with hands on a table;
+Ex4 = Leg abduction: sideway raising of the straightened leg;
+Ex5 = Leg lunge: pushing a knee of the back leg down while keeping a right angle on the front knee;
+Ex6 = Squats.
+Every exercise was also executed in two directions, resulting in different views of the subject depending on the camera. Facing the horizontal camera resulted in a front view for that camera and a profile from the other. Facing the wall between the cameras shows the subject from half-profile in both cameras.  A rare direction, only used for push-ups due to the use of the table, was facing the vertical camera, with the views being reversed compared to the first orientation.
+

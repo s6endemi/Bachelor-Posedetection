@@ -1,0 +1,71 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual Environment
+.venv/
+venv/
+ENV/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# Data - zu gross fuer Git
+data/videos/
+data/gt_2d/
+data/gt_3d/
+data/predictions/
+*.npy
+*.mp4
+*.avi
+
+# Model weights
+*.tflite
+*.pb
+*.h5
+*.onnx
+*.pt
+
+# Results (optional - kann man auch committen)
+# results/
+
+# Validation images (temporary)
+validation_*.png
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Secrets
+.env
+*.env
+models/
