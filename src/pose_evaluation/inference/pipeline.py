@@ -1,0 +1,296 @@
+"""
+Inference Pipeline - Fuehrt Pose Estimation auf allen Videos aus.
+"""
+
+import numpy as np
+import cv2
+from pathlib import Path
+from dataclasses import dataclass
+from typing import Generator
+import json
+from datetime import datetime
+
+from .data_loader import DataLoader, VideoSample
+from ..estimators import PoseEstimator
+
+
+@dataclass
+class FrameResult:
+    """Ergebnis fuer einen einzelnen Frame."""
+    frame_idx: int
+    predictions: dict[str, np.ndarray]  # model_name -> (17, 3) keypoints
+    gt_2d: np.ndarray                   # (12, 2) vergleichbare keypoints
+    rotation_angle: float               # Winkel in Grad
+
+
+@dataclass
+class VideoResult:
+    """Ergebnis fuer ein ganzes Video."""
+    sample: VideoSample
+    num_frames: int
+    predictions: dict[str, np.ndarray]  # model_name -> (num_frames, 17, 3)
+    rotation_angles: np.ndarray         # (num_frames,) in Grad
+
+
+class InferencePipeline:
+    """
+    Haupt-Pipeline fuer die Pose Estimation Evaluation.
+
+    Fuehrt alle Modelle auf allen Videos aus und speichert die Ergebnisse.
+    """
+
+    # GT Indices fuer Schultern (fuer Rotationsberechnung)
+    LEFT_SHOULDER_IDX = 7   # LeftArm
+    RIGHT_SHOULDER_IDX = 12  # RightArm
+
+    def __init__(
+        self,
+        estimators: list[PoseEstimator],
+        data_root: Path,
+        output_dir: Path
+    ):
+        """
+        Args:
+            estimators: Liste der Pose Estimators
+            data_root: Pfad zum data/ Ordner
+            output_dir: Pfad fuer Ergebnisse
+        """
+        self.estimators = estimators
+        self.data_loader = DataLoader(data_root)
+        self.output_dir = Path(output_dir)
+        self.output_dir.mkdir(parents=True, exist_ok=True)
+
+    def calculate_rotation_angle(self, gt_3d_frame: np.ndarray) -> float:
+        """
+        Berechnet den Rotationswinkel aus 3D GT.
+
+        Args:
+            gt_3d_frame: 3D Keypoints fuer einen Frame, Shape (26, 4)
+
+        Returns:
+            Rotationswinkel in Grad (0 = frontal, 90 = seitlich)
+        """
+        left_shoulder = gt_3d_frame[self.LEFT_SHOULDER_IDX]
+        right_shoulder = gt_3d_frame[self.RIGHT_SHOULDER_IDX]
+
+        # Schulterachse im Raum
+        # x = links-rechts, z = tiefe (zur Kamera)
+        dx = right_shoulder[0] - left_shoulder[0]
+        dz = right_shoulder[2] - left_shoulder[2]
+
+        # Winkel berechnen
+        # arctan2(dz, dx) gibt Winkel der Schulterachse
+        # Bei frontaler Ansicht: dx gross, dz klein -> Winkel nahe 0
+        # Bei seitlicher Ansicht: dx klein, dz gross -> Winkel nahe 90
+        angle_rad = np.arctan2(abs(dz), abs(dx))
+        angle_deg = np.degrees(angle_rad)
+
+        return angle_deg
+
+    def process_frame(
+        self,
+        frame: np.ndarray,
+        gt_3d_frame: np.ndarray
+    ) -> tuple[dict[str, np.ndarray], float]:
+        """
+        Verarbeitet einen einzelnen Frame.
+
+        Returns:
+            (predictions dict, rotation_angle)
+        """
+        predictions = {}
+
+        for estimator in self.estimators:
+            keypoints = estimator.predict(frame)
+
+            # In numpy array konvertieren (17, 3) - x, y, confidence
+            kp_array = np.array([
+                [kp.x, kp.y, kp.confidence]
+                for kp in keypoints
+            ])
+            predictions[estimator.get_model_name()] = kp_array
+
+        rotation_angle = self.calculate_rotation_angle(gt_3d_frame)
+
+        return predictions, rotation_angle
+
+    def process_video(
+        self,
+        sample: VideoSample,
+        max_frames: int | None = None,
+        progress_callback: callable = None
+    ) -> VideoResult:
+        """
+        Verarbeitet ein komplettes Video.
+
+        Args:
+            sample: VideoSample mit Pfaden
+            max_frames: Optional - nur erste N frames verarbeiten
+            progress_callback: Optional - callback(current, total)
+
+        Returns:
+            VideoResult mit allen Predictions
+        """
+        # GT laden
+        gt_2d = sample.load_gt_2d()
+        gt_3d = sample.load_gt_3d()
+
+        # Video oeffnen
+        cap = cv2.VideoCapture(str(sample.video_path))
+        total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+
+        if max_frames:
+            total_frames = min(total_frames, max_frames)
+
+        # Ergebnis-Arrays initialisieren
+        model_names = [e.get_model_name() for e in self.estimators]
+        predictions = {name: np.zeros((total_frames, 17, 3)) for name in model_names}
+        rotation_angles = np.zeros(total_frames)
+
+        # Frames verarbeiten
+        frame_idx = 0
+        while frame_idx < total_frames:
+            ret, frame = cap.read()
+            if not ret:
+                break
+
+            # Sicherstellen dass GT-Daten vorhanden
+            if frame_idx >= len(gt_3d):
+                break
+
+            # Frame verarbeiten
+            frame_preds, rotation = self.process_frame(frame, gt_3d[frame_idx])
+
+            # Speichern
+            for model_name, kps in frame_preds.items():
+                predictions[model_name][frame_idx] = kps
+            rotation_angles[frame_idx] = rotation
+
+            if progress_callback:
+                progress_callback(frame_idx + 1, total_frames)
+
+            frame_idx += 1
+
+        cap.release()
+
+        # Arrays auf tatsaechliche Laenge kuerzen
+        for name in model_names:
+            predictions[name] = predictions[name][:frame_idx]
+        rotation_angles = rotation_angles[:frame_idx]
+
+        return VideoResult(
+            sample=sample,
+            num_frames=frame_idx,
+            predictions=predictions,
+            rotation_angles=rotation_angles
+        )
+
+    def save_result(self, result: VideoResult):
+        """Speichert VideoResult als .npz Datei."""
+        # Output Pfad: output_dir/Ex1/PM_000-c17.npz
+        out_dir = self.output_dir / result.sample.exercise
+        out_dir.mkdir(exist_ok=True)
+
+        filename = f"{result.sample.subject_id}-{result.sample.camera}.npz"
+        out_path = out_dir / filename
+
+        # Predictions + Metadata speichern
+        save_dict = {
+            "rotation_angles": result.rotation_angles,
+            "num_frames": result.num_frames,
+        }
+
+        # Predictions pro Modell
+        for model_name, preds in result.predictions.items():
+            # Modellname bereinigen fuer Dateiname
+            safe_name = model_name.replace(" ", "_").replace("(", "").replace(")", "")
+            save_dict[f"pred_{safe_name}"] = preds
+
+        np.savez_compressed(out_path, **save_dict)
+        return out_path
+
+    def run(
+        self,
+        max_videos: int | None = None,
+        max_frames_per_video: int | None = None,
+        exercises: list[str] | None = None
+    ):
+        """
+        Fuehrt die komplette Pipeline aus.
+
+        Args:
+            max_videos: Optional - nur erste N Videos
+            max_frames_per_video: Optional - nur erste N Frames pro Video
+            exercises: Optional - nur bestimmte Exercises (z.B. ["Ex1", "Ex2"])
+        """
+        samples = self.data_loader.discover_samples()
+
+        # Filtern
+        if exercises:
+            samples = [s for s in samples if s.exercise in exercises]
+
+        if max_videos:
+            samples = samples[:max_videos]
+
+        print(f"Processing {len(samples)} videos...")
+        print(f"Models: {[e.get_model_name() for e in self.estimators]}")
+        print()
+
+        results_summary = []
+
+        for i, sample in enumerate(samples):
+            print(f"[{i+1}/{len(samples)}] {sample.video_path.name}")
+
+            def progress(current, total):
+                pct = current / total * 100
+                print(f"\r  Frame {current}/{total} ({pct:.1f}%)", end="", flush=True)
+
+            result = self.process_video(
+                sample,
+                max_frames=max_frames_per_video,
+                progress_callback=progress
+            )
+            print()  # Newline nach Progress
+
+            out_path = self.save_result(result)
+            print(f"  -> Saved: {out_path}")
+
+            results_summary.append({
+                "video": sample.video_path.name,
+                "exercise": sample.exercise,
+                "camera": sample.camera,
+                "frames": result.num_frames,
+                "output": str(out_path)
+            })
+
+        # Summary speichern
+        summary_path = self.output_dir / "inference_summary.json"
+        with open(summary_path, "w") as f:
+            json.dump({
+                "timestamp": datetime.now().isoformat(),
+                "models": [e.get_model_name() for e in self.estimators],
+                "total_videos": len(samples),
+                "results": results_summary
+            }, f, indent=2)
+
+        print(f"\nDone! Summary: {summary_path}")
+
+
+if __name__ == "__main__":
+    # Quick test mit einem Video
+    from ..estimators import MediaPipeEstimator, MoveNetEstimator, YOLOPoseEstimator
+
+    estimators = [
+        MediaPipeEstimator(model_complexity=1),
+        MoveNetEstimator(model_variant="thunder"),
+        YOLOPoseEstimator(model_size="n"),  # nano fuer schnellen Test
+    ]
+
+    pipeline = InferencePipeline(
+        estimators=estimators,
+        data_root=Path("data"),
+        output_dir=Path("data/predictions")
+    )
+
+    # Nur 1 Video, 10 Frames zum Testen
+    pipeline.run(max_videos=1, max_frames_per_video=10)

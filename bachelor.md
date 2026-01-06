@@ -126,25 +126,25 @@ wobei:
 
 | Körperteil | Ground Truth | MediaPipe | MoveNet | YOLOv8 |
 |------------|--------------|-----------|---------|--------|
-| Nase | ? | 0 | 0 | 0 |
-| Linkes Auge | ? | 2 | 1 | 1 |
-| Rechtes Auge | ? | 5 | 2 | 2 |
-| Linkes Ohr | ? | 7 | 3 | 3 |
-| Rechtes Ohr | ? | 8 | 4 | 4 |
-| Linke Schulter | ? | 11 | 5 | 5 |
-| Rechte Schulter | ? | 12 | 6 | 6 |
-| Linker Ellbogen | ? | 13 | 7 | 7 |
-| Rechter Ellbogen | ? | 14 | 8 | 8 |
-| Linkes Handgelenk | ? | 15 | 9 | 9 |
-| Rechtes Handgelenk | ? | 16 | 10 | 10 |
-| Linke Hüfte | ? | 23 | 11 | 11 |
-| Rechte Hüfte | ? | 24 | 12 | 12 |
-| Linkes Knie | ? | 25 | 13 | 13 |
-| Rechtes Knie | ? | 26 | 14 | 14 |
-| Linker Knöchel | ? | 27 | 15 | 15 |
-| Rechter Knöchel | ? | 28 | 16 | 16 |
+| Nase | - | 0 | 0 | 0 |
+| Linkes Auge | - | 2 | 1 | 1 |
+| Rechtes Auge | - | 5 | 2 | 2 |
+| Linkes Ohr | - | 7 | 3 | 3 |
+| Rechtes Ohr | - | 8 | 4 | 4 |
+| Linke Schulter | 7 (LeftArm) | 11 | 5 | 5 |
+| Rechte Schulter | 12 (RightArm) | 12 | 6 | 6 |
+| Linker Ellbogen | 8 (LeftForeArm) | 13 | 7 | 7 |
+| Rechter Ellbogen | 13 (RightForeArm) | 14 | 8 | 8 |
+| Linkes Handgelenk | 9 (LeftHand) | 15 | 9 | 9 |
+| Rechtes Handgelenk | 14 (RightHand) | 16 | 10 | 10 |
+| Linke Hüfte | 16 (LeftUpLeg) | 23 | 11 | 11 |
+| Rechte Hüfte | 21 (RightUpLeg) | 24 | 12 | 12 |
+| Linkes Knie | 17 (LeftLeg) | 25 | 13 | 13 |
+| Rechtes Knie | 22 (RightLeg) | 26 | 14 | 14 |
+| Linker Knöchel | 18 (LeftFoot) | 27 | 15 | 15 |
+| Rechter Knöchel | 23 (RightFoot) | 28 | 16 | 16 |
 
-→ **Gemeinsame Schnittmenge:** 17 COCO Keypoints (MoveNet & YOLOv8 identisch, MediaPipe Subset)
+→ **Gemeinsame Schnittmenge:** 12 Keypoints (GT hat keine Gesichts-Keypoints)
 
 ### 3.5 Fehlermetrik
 
@@ -379,8 +379,8 @@ class EvaluationPipeline:
 
 | Phase | Aufgaben | Status |
 |-------|----------|--------|
-| **1. Grundlagen** | Dataset laden, Struktur verstehen, Keypoint-Mapping | ⬜ |
-| **2. Pipeline** | Abstrakte Architektur + alle 3 Estimatoren implementieren | ⬜ |
+| **1. Grundlagen** | Dataset laden, Struktur verstehen, Keypoint-Mapping | ✅ |
+| **2. Pipeline** | Abstrakte Architektur + alle 3 Estimatoren implementieren | ✅ |
 | **3. Inference** | Pipeline über alle Videos laufen lassen | ⬜ |
 | **4. Rotation** | Winkelberechnung aus GT, Frame-Annotation | ⬜ |
 | **5. Evaluation** | Fehlerberechnung, Aggregation nach Bins | ⬜ |
@@ -420,8 +420,8 @@ opencv-python
 
 ## Notizen & Offene Punkte
 
-- [ ] GT Joint-Namen aus `joints_names.txt` extrahieren
-- [ ] Prüfen: Sind GT-Koordinaten in Pixel oder normalisiert?
+- [x] GT Joint-Namen aus `joints_names.txt` extrahieren → 26 Joints, 12 COCO-kompatibel
+- [x] Prüfen: Sind GT-Koordinaten in Pixel oder normalisiert? → Pixel-Koordinaten
 - [ ] Entscheiden: Confidence-Threshold für Predictions?
-- [ ] Klären: Beide Kameras separat oder zusammen auswerten?
+- [ ] Klären: Beide Kameras separat oder zusammen auswerten? (Camera17=horizontal, Camera18=vertical)
 - [ ] YOLOv8-Pose Variante festlegen (nano vs. small vs. medium)
