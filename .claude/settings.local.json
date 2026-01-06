@@ -4,7 +4,15 @@
       "Bash(git init:*)",
       "Bash(gh:*)",
       "Bash(.venv/Scripts/python:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(dir /s /b \"C:\\\\Users\\\\Eren\\\\bachelor\\\\data\\\\videos\")",
+      "Bash(cat:*)",
+      "WebSearch",
+      "Bash(ls:*)",
+      "Bash(python run_inference.py:*)",
+      "Bash(dir:*)",
+      "Bash(findstr:*)"
     ]
   }
 }

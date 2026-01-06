@@ -12,7 +12,7 @@ from pathlib import Path
 
 from src.pose_evaluation.estimators import (
     MediaPipeEstimator,
-    MoveNetEstimator,
+    MoveNetMultiPoseEstimator,
     YOLOPoseEstimator
 )
 from src.pose_evaluation.inference import InferencePipeline
@@ -37,13 +37,14 @@ def main():
         print("=== TEST MODE ===")
         print()
 
-    # Estimators initialisieren
+    # Estimators initialisieren (3 finale Modelle)
     print("Loading models...")
     estimators = [
-        MediaPipeEstimator(model_complexity=2),      # Heavy model
-        MoveNetEstimator(model_name="thunder"),      # Accurate variant
-        YOLOPoseEstimator(model_size=args.yolo_size),
+        MediaPipeEstimator(model_complexity=2),      # Heavy, Torso-Selection
+        MoveNetMultiPoseEstimator(),                 # MultiPose, BBox-Selection
+        YOLOPoseEstimator(model_size=args.yolo_size), # BBox-Selection
     ]
+    print(f"Models: {[e.get_model_name() for e in estimators]}")
 
     # Pipeline
     pipeline = InferencePipeline(

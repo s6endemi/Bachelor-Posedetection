@@ -64,7 +64,6 @@ class YOLOPoseEstimator(PoseEstimator):
                 for name in self.COCO_KEYPOINTS
             ]
 
-        # Erste erkannte Person nehmen
         keypoints_data = results[0].keypoints
 
         if keypoints_data.xy is None or len(keypoints_data.xy) == 0:
@@ -73,9 +72,25 @@ class YOLOPoseEstimator(PoseEstimator):
                 for name in self.COCO_KEYPOINTS
             ]
 
+        # Bei mehreren Personen: waehle die groesste (basierend auf Bounding Box Area)
+        num_persons = len(keypoints_data.xy)
+        if num_persons > 1 and results[0].boxes is not None:
+            best_idx = 0
+            best_area = 0
+            boxes = results[0].boxes
+            for i in range(min(num_persons, len(boxes))):
+                box = boxes.xyxy[i].cpu().numpy()
+                area = (box[2] - box[0]) * (box[3] - box[1])
+                if area > best_area:
+                    best_area = area
+                    best_idx = i
+            person_idx = best_idx
+        else:
+            person_idx = 0
+
         # Koordinaten und Confidence extrahieren
-        xy = keypoints_data.xy[0].cpu().numpy()  # Shape: (17, 2)
-        conf = keypoints_data.conf[0].cpu().numpy() if keypoints_data.conf is not None else np.ones(17)
+        xy = keypoints_data.xy[person_idx].cpu().numpy()  # Shape: (17, 2)
+        conf = keypoints_data.conf[person_idx].cpu().numpy() if keypoints_data.conf is not None else np.ones(17)
 
         # Native Keypoints extrahieren
         native_keypoints = []

@@ -39,13 +39,13 @@ class MediaPipeEstimator(PoseEstimator):
         2: "https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_heavy/float16/latest/pose_landmarker_heavy.task",
     }
 
-    def __init__(self, model_complexity: int = 2, min_detection_confidence: float = 0.5):
+    def __init__(self, model_complexity: int = 2, min_detection_confidence: float = 0.1):
         """
         Initialisiert MediaPipe Pose.
 
         Args:
             model_complexity: 0 (lite), 1 (full), oder 2 (heavy)
-            min_detection_confidence: Minimale Confidence für Detection
+            min_detection_confidence: Minimale Confidence für Detection (0.1 = niedrig, robust)
         """
         self.model_complexity = model_complexity
         self.min_detection_confidence = min_detection_confidence
@@ -85,6 +85,7 @@ class MediaPipeEstimator(PoseEstimator):
                 running_mode=vision.RunningMode.IMAGE,
                 min_pose_detection_confidence=self.min_detection_confidence,
                 min_tracking_confidence=0.5,
+                num_poses=5,  # Erlaube mehrere Personen, waehle dann die groesste
             )
             self._landmarker = vision.PoseLandmarker.create_from_options(options)
 
@@ -120,8 +121,23 @@ class MediaPipeEstimator(PoseEstimator):
                 for name in self.COCO_KEYPOINTS
             ]
 
-        # Erste Person nehmen
-        landmarks = results.pose_landmarks[0]
+        # Bei mehreren Personen: waehle die groesste (Torso-Groesse)
+        # NICHT BBox verwenden - MediaPipe's 33 Keypoints inkl. Gesicht/Haende
+        # verzerren die BBox. Torso-Groesse ist robuster.
+        if len(results.pose_landmarks) > 1:
+            best_idx = 0
+            best_size = 0
+            for i, lm in enumerate(results.pose_landmarks):
+                # Torso-Groesse: Schulter-Mitte zu Huefte-Mitte
+                shoulder_y = (lm[11].y + lm[12].y) / 2
+                hip_y = (lm[23].y + lm[24].y) / 2
+                size = abs(hip_y - shoulder_y)
+                if size > best_size:
+                    best_size = size
+                    best_idx = i
+            landmarks = results.pose_landmarks[best_idx]
+        else:
+            landmarks = results.pose_landmarks[0]
 
         # Native Keypoints extrahieren
         native_keypoints = []
