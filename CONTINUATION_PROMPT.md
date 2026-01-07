@@ -10,53 +10,29 @@ docs/02_PROBLEMS_AND_SOLUTIONS.md   # Alle gefundenen Probleme & Lösungen
 docs/01_METHODOLOGY.md              # Technische Details
 ```
 
-## Aktueller Stand (06.01.2026)
+## Aktueller Stand (07.01.2026)
 
 ### Was funktioniert
 - Pipeline komplett implementiert (Inference, Evaluation, Visualisierungen)
 - 3 Modelle: MediaPipe Heavy, MoveNet MultiPose, YOLOv8-Pose
 - Person-Selection modell-spezifisch (BBox für YOLO/MoveNet, Torso für MediaPipe)
-- Evaluator mit NMPJPE-Berechnung pro Winkel-Bin
-- Ex1 Inference läuft im Hintergrund (war bei 10/26 Videos)
+- Evaluator mit NMPJPE-Berechnung pro Winkel-Bin + **Confidence-Filter (0.5)**
+- **Kamera-Koordinatensystem GELOEST** (C17_FRONTAL_OFFSET = 65°)
+- Ex1 Inference: 9/26 Videos fertig
 
-### KRITISCHES PROBLEM: Kamera-Koordinatensystem
-**Die berechneten Rotationswinkel sind MoCap-relativ, NICHT Kamera-relativ!**
+### GELOEST: Kamera-Koordinatensystem
+Empirisch bestimmt: Bei MoCap-Winkel 65° steht Person frontal zu Camera17.
 
-Beobachtung:
-- PM_002 hat 0-10° MoCap-Winkel → Person steht SEITLICH zur Kamera
-- PM_000 hat 45-55° MoCap-Winkel → Person steht FRONTAL zur Kamera
-
-Die Kameras stehen gedreht zum MoCap-System:
-- Camera17: ~frontal wenn MoCap ~45-50°
-- Camera18: ~seitlich (90° zu Camera17)
-
-### Nächster Schritt: Kamera-Extrinsics berechnen
-
-**Option 1: PnP (empfohlen)**
 ```python
-import cv2
-import numpy as np
-
-# Wir haben:
-# - 3D GT: data/gt_3d/Ex1/PM_000-30fps.npy (N, 26, 4) - x,y,z,confidence
-# - 2D GT: data/gt_2d/Ex1/PM_000-c17-30fps.npy (N, 26, 2) - pixel x,y
-
-# PnP lösen:
-# success, rvec, tvec = cv2.solvePnP(object_points_3d, image_points_2d, camera_matrix, dist_coeffs)
-# rvec enthält die Kamera-Rotation
-
-# Dann: Kamera-relativen Winkel berechnen
-# θ_camera = θ_mocap - camera_yaw_offset
+# In pipeline.py
+C17_FRONTAL_OFFSET = 65.0
+c17_relative = abs(mocap_angle - C17_FRONTAL_OFFSET)
+c18_relative = 90.0 - c17_relative
 ```
 
-**Benötigt:**
-- Kamera-Intrinsics (focal length, principal point) - ggf. schätzen oder aus Metadaten
-- Mindestens 4 korrespondierende Punkte (haben wir: 26 Joints!)
-
-**Option 2: Empirisch**
-- Aus Videos visuell bestimmen bei welchem MoCap-Winkel Person frontal steht
-- Camera17 Offset ≈ 45-50°
-- Camera18 Offset ≈ Camera17 + 90°
+### GELOEST: MediaPipe Unterkörper-Ausreißer
+MediaPipe gibt niedrige Confidence (0.003-0.07) für unsichere Joints.
+Lösung: `MIN_JOINT_CONFIDENCE = 0.5` in evaluator.py - filtert ~15% der Frames.
 
 ## Daten-Struktur
 
@@ -112,30 +88,34 @@ results = evaluator.evaluate_all()
 
 ## TODO für nächste Session
 
-1. **Prüfen ob Ex1 Inference fertig ist**
+1. **Ex1 Inference fortsetzen** (9/26 fertig)
    ```bash
-   dir data\predictions\Ex1 | find /c ".npz"
-   # Sollte 26 sein
+   .venv/Scripts/python run_inference.py --exercise Ex1
+   # Startet automatisch bei Video 10 dank skip_existing
    ```
 
-2. **Kamera-Extrinsics mit PnP berechnen**
-   - Für Camera17 und Camera18 separat
-   - Kamera-Yaw-Offset extrahieren
-   - Funktion schreiben: `mocap_angle_to_camera_angle(θ_mocap, camera_id)`
-
-3. **Rotation-Berechnung anpassen**
-   - Entweder: Post-Processing der gespeicherten Winkel
-   - Oder: In Pipeline einbauen für Full-Run
-
-4. **Nach Fix: Full-Run starten**
+2. **Full-Run starten** (alle Exercises)
    ```bash
    .venv/Scripts/python run_inference.py
    ```
 
-5. **Finale Evaluation + Plots**
+3. **Finale Evaluation**
+   ```bash
+   .venv/Scripts/python -c "
+   from pathlib import Path
+   from src.pose_evaluation.evaluation.evaluator import Evaluator
+   e = Evaluator(predictions_dir=Path('data/predictions'), gt_2d_dir=Path('data/gt_2d'))
+   results = e.evaluate_all()
+   e.save_results(results, Path('data/predictions/final_results'))
+   "
+   ```
+
+4. **Statistische Analyse + Plots für Thesis**
 
 ## Wichtige Erkenntnisse (dokumentiert in docs/02)
-- MediaPipe braucht confidence=0.1 (nicht 0.5!)
+- MediaPipe braucht confidence=0.1 (nicht 0.5!) für Detection
+- **Evaluation:** MIN_JOINT_CONFIDENCE = 0.5 um schlechte Joints rauszufiltern
 - BBox-Selection für YOLO/MoveNet, Torso für MediaPipe
 - MoCap hat ~2.5° Std Variation bei stehender Person
 - MoveNet MultiPose statt SinglePose verwenden
+- Kamera-Offset: C17_FRONTAL_OFFSET = 65° (empirisch bestimmt)

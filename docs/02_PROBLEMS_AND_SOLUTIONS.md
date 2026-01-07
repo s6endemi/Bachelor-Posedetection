@@ -404,16 +404,116 @@ Bei 0° oder 90° wäre die Sensitivität viel geringer.
 
 ---
 
-## Offene Fragen (für Full-Run)
+---
+
+## Problem 6: Kamera-Koordinatensystem (KRITISCH)
+
+### Symptom
+Die berechneten Rotationswinkel ergaben keinen Sinn:
+- PM_002 hatte 0-10 Grad MoCap-Winkel, aber Person stand **seitlich** zur Kamera
+- PM_000 hatte 45-55 Grad MoCap-Winkel, aber Person stand **frontal** zur Kamera
+
+### Root Cause
+Die Kameras stehen nicht entlang der MoCap-Koordinatenachsen!
+- **Camera 17** schaut aus einem Winkel von ~65 Grad zum MoCap-System
+- **Camera 18** ist 90 Grad zu Camera 17 gedreht
+
+### Debug-Prozess
+1. Videos visuell analysiert: "Wann steht Person frontal?"
+2. Referenz-Videos identifiziert: PM_114, PM_122, PM_109
+3. MoCap-Winkel bei "visuell frontal" gemessen: ~65 Grad
+
+### Loesung: Empirische Offset-Transformation
+```python
+# In pipeline.py
+C17_FRONTAL_OFFSET = 65.0  # MoCap-Winkel bei frontal zu c17
+
+def calculate_rotation_angle(self, gt_3d_frame, camera):
+    # MoCap-Winkel berechnen
+    mocap_angle = np.degrees(np.arctan2(abs(dz), abs(dx)))
+
+    # Transformation zu kamera-relativ
+    c17_relative = abs(mocap_angle - C17_FRONTAL_OFFSET)
+
+    if camera == 'c17':
+        return c17_relative
+    else:  # c18 ist 90 Grad gedreht
+        return 90.0 - c17_relative
+```
+
+### Validierung
+| Video | MoCap | c17 kamera-rel | c18 kamera-rel | Beobachtung |
+|-------|-------|----------------|----------------|-------------|
+| PM_000 | 50 | 15 (frontal) | 75 (seitlich) | Korrekt! |
+| PM_002 | 2 | 63 (seitlich) | 27 (schraeg frontal) | Korrekt! |
+| PM_114 | 68 | 3 (frontal) | 87 (seitlich) | Korrekt! |
+
+### Erste Ergebnisse nach Fix
+| Winkel (kamera-relativ) | NMPJPE |
+|------------------------|--------|
+| 0-20 (frontal) | 8-11% |
+| 70-90 (seitlich) | 15-18% |
+
+**Hypothese bestaetigt: Seitliche Ansichten haben ~2x hoehere Fehler!**
+
+### Lesson Learned
+> **Koordinatensysteme IMMER validieren!** MoCap-Koordinaten sind nicht automatisch Kamera-Koordinaten. Die Transformation muss explizit durchgefuehrt werden.
+
+### Fuer die Thesis
+> "Die Rotationswinkel wurden aus den 3D Motion Capture Daten berechnet und anschliessend in das kamera-relative Koordinatensystem transformiert. Der Offset wurde empirisch aus Referenzvideos bestimmt, bei denen die Probanden visuell frontal zur jeweiligen Kamera standen (C17_FRONTAL_OFFSET = 65 Grad). Camera 18 ist 90 Grad zu Camera 17 gedreht."
+
+### Warum nicht PnP?
+PnP (Perspective-n-Point) waere mathematisch exakter, aber:
+1. Keine Kamera-Intrinsics im Dataset
+2. Empirischer Ansatz reicht fuer 10-Grad-Bins
+3. Ergebnisse wurden visuell validiert
+
+---
+
+## Problem 7: MediaPipe Unterkörper-Ausreißer
+
+### Symptom
+Bei ~22% der Frames hatte MediaPipe extrem hohe Fehler (>100px) am Unterkörper, während MoveNet/YOLO stabil blieben.
+
+### Debug-Prozess
+1. Verglichen gute vs. schlechte Frames
+2. Entdeckt: Bei schlechten Frames hat MediaPipe **niedrige Joint-Confidence** (0.003-0.07)
+3. Bei guten Frames: Joint-Confidence > 0.95
+
+### Root Cause
+MediaPipe liefert Confidence pro Keypoint. Bei Multi-Person-Szenarien oder schwierigen Posen wird MediaPipe unsicher - und zeigt das durch niedrige Confidence an. Wir haben diese Information ignoriert.
+
+### Loesung: Confidence-Filter
+```python
+# Nur Joints mit Confidence >= 0.5 in Evaluation einbeziehen
+MIN_JOINT_CONFIDENCE = 0.5
+```
+
+### Ergebnis
+| Modell | Ohne Filter | Mit Filter (0.5) | Gefilterte Joints |
+|--------|-------------|------------------|-------------------|
+| MediaPipe | 18.3% | 12.9% | 6.8% |
+| MoveNet | ~12% | ~12% | 2.2% |
+| YOLO | ~12% | ~12% | 0.0% |
+
+### Lesson Learned
+> **Confidence-Werte sind nicht optional!** Sie zeigen die Zuverlaessigkeit der Detektion an. Ein Modell das "ich bin unsicher" sagt, sollte man nicht zwingen eine Antwort zu geben.
+
+### Fuer die Thesis
+> "Keypoints mit Confidence < 0.5 wurden von der Evaluation ausgeschlossen. Dies betraf 6.8% der MediaPipe-Joints, 2.2% bei MoveNet, und 0% bei YOLO. Die unterschiedlichen Skip-Raten deuten auf unterschiedliche Zuverlaessigkeit der Modelle hin - YOLO ist stets confident, waehrend MediaPipe bei schwierigen Szenarien haeufiger unsicher ist."
+
+---
+
+## Offene Fragen (fuer Full-Run)
 
 1. **Wie verhält sich MoveNet Thunder vs Lightning?**
    - Lightning ist schneller aber weniger genau
-   - MultiPose nur als Lightning verfügbar
+   - MultiPose nur als Lightning verfuegbar
 
 2. **Confidence-Thresholds optimieren?**
    - Aktuell: MediaPipe=0.1, MoveNet=0.1, YOLO=default
-   - Könnte man tunen, aber nicht primäres Ziel
+   - Koennte man tunen, aber nicht primaeres Ziel
 
 3. **Per-Joint Analyse bei hoher Rotation?**
-   - Hypothese: Extremitäten leiden mehr
+   - Hypothese: Extremitaeten leiden mehr
    - Wird im Full-Run analysiert

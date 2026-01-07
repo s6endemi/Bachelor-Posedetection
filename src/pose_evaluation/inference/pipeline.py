@@ -43,6 +43,10 @@ class InferencePipeline:
     LEFT_SHOULDER_IDX = 7   # LeftArm
     RIGHT_SHOULDER_IDX = 12  # RightArm
 
+    # Kamera-Offset: Bei diesem MoCap-Winkel steht Person frontal zu Camera 17
+    # Empirisch bestimmt aus PM_114, PM_122, PM_109 (siehe docs/02_PROBLEMS_AND_SOLUTIONS.md)
+    C17_FRONTAL_OFFSET = 65.0
+
     def __init__(
         self,
         estimators: list[PoseEstimator],
@@ -60,40 +64,50 @@ class InferencePipeline:
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(parents=True, exist_ok=True)
 
-    def calculate_rotation_angle(self, gt_3d_frame: np.ndarray) -> float:
+    def calculate_rotation_angle(self, gt_3d_frame: np.ndarray, camera: str) -> float:
         """
-        Berechnet den Rotationswinkel aus 3D GT.
+        Berechnet den Rotationswinkel RELATIV ZUR KAMERA aus 3D GT.
 
         Args:
             gt_3d_frame: 3D Keypoints fuer einen Frame, Shape (26, 4)
+            camera: Kamera-ID ('c17' oder 'c18')
 
         Returns:
-            Rotationswinkel in Grad (0 = frontal, 90 = seitlich)
+            Kamera-relativer Rotationswinkel in Grad (0 = frontal, 90 = seitlich)
         """
         left_shoulder = gt_3d_frame[self.LEFT_SHOULDER_IDX]
         right_shoulder = gt_3d_frame[self.RIGHT_SHOULDER_IDX]
 
         # Schulterachse im Raum
-        # x = links-rechts, z = tiefe (zur Kamera)
         dx = right_shoulder[0] - left_shoulder[0]
         dz = right_shoulder[2] - left_shoulder[2]
 
-        # Winkel berechnen
-        # arctan2(dz, dx) gibt Winkel der Schulterachse
-        # Bei frontaler Ansicht: dx gross, dz klein -> Winkel nahe 0
-        # Bei seitlicher Ansicht: dx klein, dz gross -> Winkel nahe 90
-        angle_rad = np.arctan2(abs(dz), abs(dx))
-        angle_deg = np.degrees(angle_rad)
+        # MoCap-Winkel berechnen
+        mocap_angle = np.degrees(np.arctan2(abs(dz), abs(dx)))
 
-        return angle_deg
+        # Transformation zu kamera-relativem Winkel
+        # c17 sieht Person als frontal bei MoCap ~65 Grad
+        # c18 ist 90 Grad zu c17 gedreht
+        c17_relative = abs(mocap_angle - self.C17_FRONTAL_OFFSET)
+
+        if camera == 'c17':
+            return c17_relative
+        else:  # c18
+            return 90.0 - c17_relative
 
     def process_frame(
         self,
         frame: np.ndarray,
-        gt_3d_frame: np.ndarray
+        gt_3d_frame: np.ndarray,
+        camera: str
     ) -> tuple[dict[str, np.ndarray], float]:
         """
         Verarbeitet einen einzelnen Frame.
+
+        Args:
+            frame: Video-Frame als numpy array
+            gt_3d_frame: 3D Ground Truth fuer diesen Frame
+            camera: Kamera-ID ('c17' oder 'c18')
 
         Returns:
             (predictions dict, rotation_angle)
@@ -110,7 +124,7 @@ class InferencePipeline:
             ])
             predictions[estimator.get_model_name()] = kp_array
 
-        rotation_angle = self.calculate_rotation_angle(gt_3d_frame)
+        rotation_angle = self.calculate_rotation_angle(gt_3d_frame, camera)
 
         return predictions, rotation_angle
 
@@ -158,8 +172,8 @@ class InferencePipeline:
             if frame_idx >= len(gt_3d):
                 break
 
-            # Frame verarbeiten
-            frame_preds, rotation = self.process_frame(frame, gt_3d[frame_idx])
+            # Frame verarbeiten (mit Kamera-Info fuer kamera-relative Winkel)
+            frame_preds, rotation = self.process_frame(frame, gt_3d[frame_idx], sample.camera)
 
             # Speichern
             for model_name, kps in frame_preds.items():
@@ -213,7 +227,8 @@ class InferencePipeline:
         self,
         max_videos: int | None = None,
         max_frames_per_video: int | None = None,
-        exercises: list[str] | None = None
+        exercises: list[str] | None = None,
+        skip_existing: bool = True
     ):
         """
         Fuehrt die komplette Pipeline aus.
@@ -222,6 +237,7 @@ class InferencePipeline:
             max_videos: Optional - nur erste N Videos
             max_frames_per_video: Optional - nur erste N Frames pro Video
             exercises: Optional - nur bestimmte Exercises (z.B. ["Ex1", "Ex2"])
+            skip_existing: Ueberspringe bereits verarbeitete Videos (default: True)
         """
         samples = self.data_loader.discover_samples()
 
@@ -231,6 +247,19 @@ class InferencePipeline:
 
         if max_videos:
             samples = samples[:max_videos]
+
+        # Skip existing
+        if skip_existing:
+            original_count = len(samples)
+            samples_to_process = []
+            for s in samples:
+                out_path = self.output_dir / s.exercise / f"{s.subject_id}-{s.camera}.npz"
+                if not out_path.exists():
+                    samples_to_process.append(s)
+            samples = samples_to_process
+            skipped = original_count - len(samples)
+            if skipped > 0:
+                print(f"Skipping {skipped} already processed videos")
 
         print(f"Processing {len(samples)} videos...")
         print(f"Models: {[e.get_model_name() for e in self.estimators]}")

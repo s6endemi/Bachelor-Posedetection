@@ -1,8 +1,8 @@
 # ZWISCHENSTAND: Pose Estimation Vergleich
 
-> **Letzte Aktualisierung:** 06.01.2026 (Session 2)
-> **Status:** Ex1 Inference läuft, KRITISCHES PROBLEM entdeckt: Kamera-Koordinatensystem
-> **Fortschritt:** ~55%
+> **Letzte Aktualisierung:** 07.01.2026 (Session 4)
+> **Status:** Kamera-Offset + MediaPipe-Confidence GELOEST + Evaluator mit Filter
+> **Fortschritt:** ~75%
 
 ---
 
@@ -16,44 +16,47 @@
 | 4. Pipeline | ✅ | Inference + Rotation |
 | 5. Evaluation | ✅ | Metriken + Aggregation + Visualisierungen |
 | 6. Mini-Test | ✅ | 500 Frames validiert |
-| 7. **Ex1 Inference** | 🔄 | **8/26 Videos fertig, läuft im Hintergrund** |
-| 8. **Kamera-Offset** | ⚠️ | **KRITISCH: Rotation ist MoCap-relativ, nicht Kamera-relativ!** |
-| 9. Full-Run | ⬜ | Nach Kamera-Offset-Fix |
+| 7. **Ex1 Inference** | 🔄 | **9/26 Videos fertig, morgen fortsetzen** |
+| 8. **Kamera-Offset** | ✅ | **GELOEST: C17_FRONTAL_OFFSET = 65 Grad** |
+| 9. Full-Run | ⬜ | Nach Ex1 fertig |
 | 10. Analyse | ⬜ | Plots, Statistik |
 | 11. Thesis | ⬜ | Schreiben |
 
 ---
 
-## ⚠️ KRITISCHES PROBLEM: Rotationswinkel-Koordinatensystem
+## ✅ GELOEST: Kamera-Koordinatensystem
 
-### Das Problem
-Die berechneten Rotationswinkel sind relativ zum **MoCap-Koordinatensystem**, NICHT zur Kamera!
+### Das Problem (war)
+Die berechneten Rotationswinkel waren relativ zum **MoCap-Koordinatensystem**, NICHT zur Kamera.
 
+### Loesung (implementiert)
+**Empirische Offset-Bestimmung** aus Videos PM_114, PM_122, PM_109:
+
+```python
+# In pipeline.py
+C17_FRONTAL_OFFSET = 65.0  # MoCap-Winkel bei dem Person frontal zu c17 steht
+
+def mocap_to_camera_relative(mocap_angle, camera):
+    c17_relative = abs(mocap_angle - C17_FRONTAL_OFFSET)
+    if camera == 'c17':
+        return c17_relative
+    else:  # c18 ist 90 Grad zu c17 gedreht
+        return 90.0 - c17_relative
 ```
-Beobachtung:
-- PM_002 hat 0-10° Rotation → Person steht SEITLICH zur Kamera
-- PM_000 hat 45-55° Rotation → Person steht FRONTALER zur Kamera
 
-Das ist genau UMGEKEHRT zu dem was man erwarten würde!
-```
+### Validierung
+| Video | MoCap | c17 (berechnet) | c18 (berechnet) | Beobachtung |
+|-------|-------|-----------------|-----------------|-------------|
+| PM_000 | ~50 | 15 (frontal) | 75 (seitlich) | Passt! |
+| PM_002 | ~2 | 63 (seitlich) | 27 (frontal) | Passt! |
 
-### Ursache
-Die Kameras stehen nicht senkrecht zum MoCap-Koordinatensystem:
-- **Camera17**: Person erscheint ~frontal wenn MoCap-Winkel ~45-50°
-- **Camera18**: Person erscheint ~seitlich (90° gedreht zu Camera17)
+### Erste Ergebnisse (9 Videos, kamera-relativ)
+| Winkel | NMPJPE (alle Modelle) |
+|--------|----------------------|
+| 0-20 (frontal) | ~8-11% |
+| 70-90 (seitlich) | ~15-18% |
 
-### Lösung (TODO)
-**Option 1: PnP (Perspective-n-Point)**
-- Wir haben 3D GT + 2D GT → können Kamera-Extrinsics berechnen
-- Sauberer, mathematisch korrekter Ansatz
-- Ermöglicht exakte Transformation MoCap→Kamera
-
-**Option 2: Empirische Schätzung**
-- Aus Videos visuell den Offset bestimmen
-- Schneller, aber weniger genau
-
-### Nächster Schritt
-PnP mit `cv2.solvePnP()` implementieren um Kamera-Rotation zu berechnen
+**Hypothese bestaetigt: Seitliche Ansichten haben ~2x hoehere Fehler!**
 
 ---
 
@@ -64,6 +67,8 @@ PnP mit `cv2.solvePnP()` implementieren um Kamera-Rotation zu berechnen
 | MediaPipe | Heavy | Torso-Größe | `confidence=0.1` |
 | MoveNet | **MultiPose** | BBox Area | Lightning |
 | YOLO | Nano/Medium | BBox Area | Default |
+
+**Evaluation:** `MIN_JOINT_CONFIDENCE = 0.5` - Joints mit niedriger Confidence werden bei NMPJPE-Berechnung ausgeschlossen.
 
 ---
 
@@ -79,18 +84,21 @@ PnP mit `cv2.solvePnP()` implementieren um Kamera-Rotation zu berechnen
 
 ---
 
-## Nächste Schritte
+## Naechste Schritte
 
-### JETZT: Full-Run starten
+### MORGEN: Ex1 Inference fortsetzen
+Die Pipeline wurde angepasst und speichert jetzt kamera-relative Winkel.
+Bestehende 9 .npz Dateien wurden bereits transformiert.
+
 ```bash
-python run_inference.py                  # Alle 126 Videos (~2-4h)
-python run_inference.py --exercise Ex1   # Nur Ex1 (~20min)
+# Ex1 fortsetzen (startet automatisch bei Video 10)
+.venv/Scripts/python run_inference.py --exercise Ex1
 ```
 
 ### DANACH
-1. Evaluation mit `Evaluator`
-2. NMPJPE pro Winkel-Bin
-3. Plots erstellen
+1. Full-Run (alle 126 Videos)
+2. Finale Evaluation mit `Evaluator`
+3. Statistische Analyse + Plots
 4. Thesis schreiben
 
 ---
@@ -212,6 +220,7 @@ debug_rotation_check.png          # Debug: PM_002 vs PM_000 Winkelvergleich
 
 | Datum | Änderung | Betroffene Docs |
 |-------|----------|-----------------|
+| 07.01 | Evaluator: Confidence-Filter 0.5 implementiert | evaluator.py |
 | 06.01 | **Kamera-Koordinatensystem Problem entdeckt** | 02, ZWISCHENSTAND |
 | 06.01 | Visualisierungen erstellt | - |
 | 06.01 | Ex1 Inference gestartet (8/26 fertig) | - |

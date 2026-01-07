@@ -52,6 +52,11 @@ class Evaluator:
     # Winkel-Bins: 0-10, 10-20, ..., 80-90
     DEFAULT_ANGLE_BINS = list(range(0, 91, 10))
 
+    # Minimum Confidence fuer Joint-Inclusion
+    # Joints mit niedrigerer Confidence werden von der NMPJPE-Berechnung ausgeschlossen
+    # Behebt MediaPipe Unterkörper-Ausreißer (siehe docs/02_PROBLEMS_AND_SOLUTIONS.md Problem 7)
+    MIN_JOINT_CONFIDENCE = 0.5
+
     def __init__(
         self,
         predictions_dir: Path,
@@ -97,7 +102,7 @@ class Evaluator:
             result[i] = gt_2d_frame[gt_idx]
         return result
 
-    def extract_comparable_keypoints_pred(self, pred_frame: np.ndarray) -> np.ndarray:
+    def extract_comparable_keypoints_pred(self, pred_frame: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
         """
         Extrahiert die 12 vergleichbaren Keypoints aus Predictions (17 COCO).
 
@@ -105,12 +110,16 @@ class Evaluator:
             pred_frame: (17, 3) Predicted Keypoints (x, y, conf)
 
         Returns:
-            (12, 2) vergleichbare Keypoints (nur x, y)
+            Tuple of:
+                - (12, 2) vergleichbare Keypoints (x, y)
+                - (12,) Confidence-Werte
         """
-        result = np.zeros((12, 2))
+        coords = np.zeros((12, 2))
+        confidences = np.zeros(12)
         for i, coco_idx in enumerate(self.comparable_indices):
-            result[i] = pred_frame[coco_idx, :2]  # Nur x, y
-        return result
+            coords[i] = pred_frame[coco_idx, :2]  # x, y
+            confidences[i] = pred_frame[coco_idx, 2]  # confidence
+        return coords, confidences
 
     def calculate_torso_length_gt(self, gt_2d_frame: np.ndarray) -> float:
         """
@@ -151,7 +160,7 @@ class Evaluator:
         """
         # Vergleichbare Keypoints extrahieren
         gt_comparable = self.extract_comparable_keypoints_gt(gt_2d_frame)
-        pred_comparable = self.extract_comparable_keypoints_pred(pred_frame)
+        pred_comparable, pred_confidences = self.extract_comparable_keypoints_pred(pred_frame)
 
         # Torso-Laenge aus GT
         torso_length = self.calculate_torso_length_gt(gt_2d_frame)
@@ -170,12 +179,21 @@ class Evaluator:
         errors = calculate_euclidean_error(gt_comparable, pred_comparable)
         normalized_errors = errors / torso_length * 100  # In Prozent
 
-        # NMPJPE = Mittelwert der normalisierten Fehler
-        nmpjpe = np.nanmean(normalized_errors)
+        # Confidence-Filter anwenden: Joints mit niedriger Confidence ausschliessen
+        # Setzt Fehler auf NaN fuer low-confidence Joints, damit sie bei nanmean ignoriert werden
+        valid_mask = pred_confidences >= self.MIN_JOINT_CONFIDENCE
+        filtered_errors = np.where(valid_mask, normalized_errors, np.nan)
 
-        # PCK = Anteil der Keypoints unter Threshold (10% Torso)
+        # NMPJPE = Mittelwert der normalisierten Fehler (nur valide Joints)
+        nmpjpe = np.nanmean(filtered_errors)
+
+        # PCK = Anteil der Keypoints unter Threshold (nur valide Joints)
         threshold = 0.1 * torso_length
-        pck = np.sum(errors < threshold) / len(errors) * 100
+        valid_errors = errors[valid_mask]
+        if len(valid_errors) > 0:
+            pck = np.sum(valid_errors < threshold) / len(valid_errors) * 100
+        else:
+            pck = np.nan
 
         return FrameMetrics(
             frame_idx=frame_idx,
@@ -183,7 +201,7 @@ class Evaluator:
             model_name=model_name,
             nmpjpe=nmpjpe,
             pck=pck,
-            per_joint_errors=normalized_errors
+            per_joint_errors=filtered_errors  # NaN fuer gefilterte Joints
         )
 
     def evaluate_video(
