@@ -1,0 +1,122 @@
+{
+  "rotation_effect": {
+    "MediaPipe full_correlation": {
+      "test_name": "Pearson Correlation (MediaPipe full)",
+      "statistic": 0.021518310659246725,
+      "p_value": 1.3407099760009595e-13,
+      "effect_size": 0.00046303769362785125,
+      "interpretation": "schwacher positiver Zusammenhang (r=0.022)",
+      "significant": 1
+    },
+    "MediaPipe full_regression": {
+      "test_name": "Linear Regression (MediaPipe full)",
+      "statistic": 0.01763802252023715,
+      "p_value": 1.3407099760006144e-13,
+      "effect_size": 0.0004630376936278505,
+      "interpretation": "Pro 10\u00b0 Rotation: +0.18% NMPJPE",
+      "significant": 1
+    },
+    "MoveNet multipose_correlation": {
+      "test_name": "Pearson Correlation (MoveNet multipose)",
+      "statistic": -0.01923784707210852,
+      "p_value": 3.782746999640566e-11,
+      "effect_size": 0.0003700947599698343,
+      "interpretation": "schwacher positiver Zusammenhang (r=-0.019)",
+      "significant": 1
+    },
+    "MoveNet multipose_regression": {
+      "test_name": "Linear Regression (MoveNet multipose)",
+      "statistic": -0.01823327260160427,
+      "p_value": 3.7827469996413765e-11,
+      "effect_size": 0.0003700947599698343,
+      "interpretation": "Pro 10\u00b0 Rotation: +-0.18% NMPJPE",
+      "significant": 1
+    },
+    "YOLOv8-Pose n_correlation": {
+      "test_name": "Pearson Correlation (YOLOv8-Pose n)",
+      "statistic": -0.04399171308861532,
+      "p_value": 2.4645256820964207e-50,
+      "effect_size": 0.0019352708204710483,
+      "interpretation": "schwacher positiver Zusammenhang (r=-0.044)",
+      "significant": 1
+    },
+    "YOLOv8-Pose n_regression": {
+      "test_name": "Linear Regression (YOLOv8-Pose n)",
+      "statistic": -0.06280345912176184,
+      "p_value": 2.4645256820980425e-50,
+      "effect_size": 0.0019352708204710466,
+      "interpretation": "Pro 10\u00b0 Rotation: +-0.63% NMPJPE",
+      "significant": 1
+    }
+  },
+  "model_differences": {
+    "anova": {
+      "test_name": "One-way ANOVA (Modelle)",
+      "statistic": 567.0620181678594,
+      "p_value": 1.3327076724036859e-246,
+      "effect_size": 0.003217700636728643,
+      "interpretation": "eta-squared = 0.003 (kleiner Effekt)",
+      "significant": 1
+    },
+    "ttest_MediaPipe full_vs_MoveNet multipose": {
+      "test_name": "t-test: MediaPipe full vs MoveNet multipose",
+      "statistic": 16.4641936305487,
+      "p_value": 7.173765924931377e-61,
+      "effect_size": 0.06771759654054936,
+      "interpretation": "Delta = 1.69%, d = 0.07",
+      "significant": 1
+    },
+    "ttest_MediaPipe full_vs_YOLOv8-Pose n": {
+      "test_name": "t-test: MediaPipe full vs YOLOv8-Pose n",
+      "statistic": -19.073061442787473,
+      "p_value": 4.875649113483939e-81,
+      "effect_size": -0.0787067362561635,
+      "interpretation": "Delta = -2.58%, d = -0.08",
+      "significant": 1
+    },
+    "ttest_MoveNet multipose_vs_YOLOv8-Pose n": {
+      "test_name": "t-test: MoveNet multipose vs YOLOv8-Pose n",
+      "statistic": -30.248195664849284,
+      "p_value": 1.3522352038306197e-200,
+      "effect_size": -0.12499420015135641,
+      "interpretation": "Delta = -4.27%, d = -0.12",
+      "significant": 1
+    }
+  },
+  "joint_vulnerability": {
+    "distal_vs_proximal": {
+      "test_name": "t-test: Distale vs Proximale Joints (>60\u00b0 Rotation)",
+      "statistic": 174.08430664711028,
+      "p_value": 0.0,
+      "effect_size": 0.2561540577843424,
+      "interpretation": "Distal: 21.4%, Proximal: 14.6%, Delta = 6.8%",
+      "significant": 1
+    }
+  },
+  "selection_robustness": {
+    "MediaPipe full_coach_effect": {
+      "test_name": "Coach-Effect (MediaPipe full)",
+      "statistic": -68.15792245886057,
+      "p_value": 0.0,
+      "effect_size": 215.4112650435875,
+      "interpretation": "Clean: 14.4%, Coach: 45.4%, Anstieg: +215.4%",
+      "significant": 1
+    },
+    "MoveNet multipose_coach_effect": {
+      "test_name": "Coach-Effect (MoveNet multipose)",
+      "statistic": -90.51181278659136,
+      "p_value": 0.0,
+      "effect_size": 389.8093507932506,
+      "interpretation": "Clean: 12.7%, Coach: 62.2%, Anstieg: +389.8%",
+      "significant": 1
+    },
+    "YOLOv8-Pose n_coach_effect": {
+      "test_name": "Coach-Effect (YOLOv8-Pose n)",
+      "statistic": -67.26424328662301,
+      "p_value": 0.0,
+      "effect_size": 288.9047759154761,
+      "interpretation": "Clean: 17.0%, Coach: 66.0%, Anstieg: +288.9%",
+      "significant": 1
+    }
+  }
+}

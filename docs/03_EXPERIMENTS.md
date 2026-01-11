@@ -216,35 +216,62 @@ Verstehen, welche Rotationswinkel im Dataset vorkommen.
 
 ---
 
-## Geplant: Full-Run Experiment
+## Experiment 7: Full-Run (ABGESCHLOSSEN)
 
 ### Setup
 ```bash
-python run_inference.py  # Alle 126 Videos
+.venv/Scripts/python run_inference.py --yolo-size n --frame-step 3
 ```
 
 ### Parameter
-- **Modelle:** MediaPipe Heavy, MoveNet MultiPose, YOLOv8-Pose Medium
+- **Modelle:** MediaPipe Full (complexity=1), MoveNet MultiPose Lightning, YOLOv8-Pose Nano
 - **Videos:** 126 (Ex1-Ex6, c17+c18)
-- **Frames:** Alle (~185k)
-- **Geschätzte Dauer:** 2-4 Stunden
+- **Frames:** 122.400 (bei frame_step=3, entspricht ~10Hz)
+- **Dauer:** ~4-5 Stunden
 
-### Erwartete Outputs
+### Outputs
 ```
 data/predictions/
 ├── Ex1/
 │   ├── PM_000-c17.npz
 │   ├── PM_000-c18.npz
-│   └── ...
-├── Ex2/
-└── ...
+│   └── ... (21 Videos)
+├── Ex2/ (21 Videos)
+├── Ex3/ (21 Videos)
+├── Ex4/ (21 Videos)
+├── Ex5/ (21 Videos)
+└── Ex6/ (21 Videos)
 ```
 
-### Geplante Analysen
-1. NMPJPE pro Winkel-Bin pro Modell
-2. Per-Joint Fehler-Analyse
-3. Ausreißer-Statistik
-4. Statistische Signifikanztests
+### Haupt-Ergebnisse
+
+#### Modell-Ranking (Gesamt)
+| Modell | NMPJPE | Std | Bewertung |
+|--------|--------|-----|-----------|
+| **MoveNet** | **10.8%** | 11.8% | BESTE WAHL |
+| MediaPipe | 14.3% | 21.4% | Gut, aber variabel |
+| YOLO | 14.6% | 25.0% | Gut, aber Selection-Problem |
+
+#### Rotations-Effekt (c18-only, saubere Daten)
+| Rotation | MediaPipe | MoveNet | YOLO | Anstieg |
+|----------|-----------|---------|------|---------|
+| 25-40° (schraeg) | 10.5% | 10.4% | 11.2% | - |
+| 70-90° (seitlich) | 17.5% | 16.7% | 18.5% | **+60-67%** |
+
+#### Kritische Entdeckung: YOLO Coach-Problem
+| Kamera | YOLO NMPJPE | Videos >30% Fehler |
+|--------|-------------|--------------------|
+| c17 | **54.9%** | **49.2%** |
+| c18 | 15.3% | 0.0% |
+
+**Root Cause:** YOLO Selection hat keinen Score-Filter (im Gegensatz zu MoveNet).
+Coach tritt bei c17-Videos ins Bild, hat groessere BBox, wird faelschlicherweise gewaehlt.
+
+### Analysierte Effekte
+1. ✅ NMPJPE vs Rotation: **+60-67% Anstieg bei seitlicher Ansicht**
+2. ✅ Per-Joint Analyse: **Handgelenke +67-93%, Hueften -14-39%**
+3. ✅ Ausreisser: **31 YOLO Videos >30%, alle c17**
+4. ⏳ Statistische Signifikanz: Ausstehend (ANOVA/Tukey)
 
 ---
 
@@ -257,6 +284,13 @@ data/predictions/
 | 05.01 | MoveNet SinglePose | Architektur-Limitation | → MultiPose |
 | 06.01 | MediaPipe BBox | Macht es schlimmer | → Torso bleibt |
 | 06.01 | Mini-Test | Pipeline validiert | → Ready for Full-Run |
+| 06.01 | Kamera-Koordinatensystem | MoCap ≠ Kamera | → C17_FRONTAL_OFFSET = 65° |
+| 07.01 | Full-Run Start | 126 Videos | frame_step=3 |
+| 08.01 | Full-Run DONE | 122.400 Frames | Alle .npz gespeichert |
+| 08.01 | YOLO Coach-Problem | 31 Videos >30% bei c17 | Root Cause: kein Score-Filter |
+| 08.01 | Rotations-Trend | +60-67% bei seitlich | Auf c18-only bestaetigt |
+| 08.01 | Per-Joint Analyse | Handgelenke am schlimmsten | +67-93% bei Rotation |
+| 08.01 | Modell-Ranking | MoveNet beste Wahl | 10.8% NMPJPE, robuste Selection |
 
 ---
 

@@ -132,7 +132,8 @@ class InferencePipeline:
         self,
         sample: VideoSample,
         max_frames: int | None = None,
-        progress_callback: callable = None
+        progress_callback: callable = None,
+        frame_step: int = 1
     ) -> VideoResult:
         """
         Verarbeitet ein komplettes Video.
@@ -141,6 +142,7 @@ class InferencePipeline:
             sample: VideoSample mit Pfaden
             max_frames: Optional - nur erste N frames verarbeiten
             progress_callback: Optional - callback(current, total)
+            frame_step: Nur jeden N-ten Frame verarbeiten (default: 1 = alle)
 
         Returns:
             VideoResult mit allen Predictions
@@ -151,50 +153,69 @@ class InferencePipeline:
 
         # Video oeffnen
         cap = cv2.VideoCapture(str(sample.video_path))
-        total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+        total_video_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
 
+        # Berechne welche Frames wir verarbeiten
+        max_source_frames = min(total_video_frames, len(gt_3d))
         if max_frames:
-            total_frames = min(total_frames, max_frames)
+            max_source_frames = min(max_source_frames, max_frames * frame_step)
+
+        # Frame-Indices die wir verarbeiten (0, step, 2*step, ...)
+        frame_indices = list(range(0, max_source_frames, frame_step))
+        num_output_frames = len(frame_indices)
 
         # Ergebnis-Arrays initialisieren
         model_names = [e.get_model_name() for e in self.estimators]
-        predictions = {name: np.zeros((total_frames, 17, 3)) for name in model_names}
-        rotation_angles = np.zeros(total_frames)
+        predictions = {name: np.zeros((num_output_frames, 17, 3)) for name in model_names}
+        rotation_angles = np.zeros(num_output_frames)
 
         # Frames verarbeiten
-        frame_idx = 0
-        while frame_idx < total_frames:
+        output_idx = 0
+        video_frame_idx = 0
+
+        while output_idx < num_output_frames:
+            target_frame = frame_indices[output_idx]
+
+            # Frames skippen bis zum Ziel-Frame
+            while video_frame_idx < target_frame:
+                ret, _ = cap.read()
+                if not ret:
+                    break
+                video_frame_idx += 1
+
+            # Ziel-Frame lesen
             ret, frame = cap.read()
             if not ret:
                 break
+            video_frame_idx += 1
 
             # Sicherstellen dass GT-Daten vorhanden
-            if frame_idx >= len(gt_3d):
+            if target_frame >= len(gt_3d):
                 break
 
             # Frame verarbeiten (mit Kamera-Info fuer kamera-relative Winkel)
-            frame_preds, rotation = self.process_frame(frame, gt_3d[frame_idx], sample.camera)
+            frame_preds, rotation = self.process_frame(frame, gt_3d[target_frame], sample.camera)
 
             # Speichern
             for model_name, kps in frame_preds.items():
-                predictions[model_name][frame_idx] = kps
-            rotation_angles[frame_idx] = rotation
+                predictions[model_name][output_idx] = kps
+            rotation_angles[output_idx] = rotation
 
             if progress_callback:
-                progress_callback(frame_idx + 1, total_frames)
+                progress_callback(output_idx + 1, num_output_frames)
 
-            frame_idx += 1
+            output_idx += 1
 
         cap.release()
 
         # Arrays auf tatsaechliche Laenge kuerzen
         for name in model_names:
-            predictions[name] = predictions[name][:frame_idx]
-        rotation_angles = rotation_angles[:frame_idx]
+            predictions[name] = predictions[name][:output_idx]
+        rotation_angles = rotation_angles[:output_idx]
 
         return VideoResult(
             sample=sample,
-            num_frames=frame_idx,
+            num_frames=output_idx,
             predictions=predictions,
             rotation_angles=rotation_angles
         )
@@ -228,7 +249,8 @@ class InferencePipeline:
         max_videos: int | None = None,
         max_frames_per_video: int | None = None,
         exercises: list[str] | None = None,
-        skip_existing: bool = True
+        skip_existing: bool = True,
+        frame_step: int = 1
     ):
         """
         Fuehrt die komplette Pipeline aus.
@@ -238,6 +260,7 @@ class InferencePipeline:
             max_frames_per_video: Optional - nur erste N Frames pro Video
             exercises: Optional - nur bestimmte Exercises (z.B. ["Ex1", "Ex2"])
             skip_existing: Ueberspringe bereits verarbeitete Videos (default: True)
+            frame_step: Nur jeden N-ten Frame verarbeiten (default: 1 = alle)
         """
         samples = self.data_loader.discover_samples()
 
@@ -263,6 +286,8 @@ class InferencePipeline:
 
         print(f"Processing {len(samples)} videos...")
         print(f"Models: {[e.get_model_name() for e in self.estimators]}")
+        if frame_step > 1:
+            print(f"Frame step: {frame_step} (processing every {frame_step}. frame)")
         print()
 
         results_summary = []
@@ -277,7 +302,8 @@ class InferencePipeline:
             result = self.process_video(
                 sample,
                 max_frames=max_frames_per_video,
-                progress_callback=progress
+                progress_callback=progress,
+                frame_step=frame_step
             )
             print()  # Newline nach Progress
 
@@ -298,6 +324,7 @@ class InferencePipeline:
             json.dump({
                 "timestamp": datetime.now().isoformat(),
                 "models": [e.get_model_name() for e in self.estimators],
+                "frame_step": frame_step,
                 "total_videos": len(samples),
                 "results": results_summary
             }, f, indent=2)

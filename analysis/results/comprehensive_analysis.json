@@ -1,0 +1,701 @@
+{
+  "model_benchmark": {
+    "title": "Modell-Benchmark im Rehabilitations-Kontext",
+    "description": "Vergleich von MediaPipe, MoveNet und YOLO auf klinischen Physiotherapie-Daten",
+    "descriptive_statistics": [
+      {
+        "model": "MediaPipe full",
+        "mean": 14.39,
+        "std": 23.04,
+        "median": 11.24,
+        "q25": 9.56,
+        "q75": 13.37,
+        "n_frames": 118304
+      },
+      {
+        "model": "MoveNet multipose",
+        "mean": 12.7,
+        "std": 26.64,
+        "median": 9.83,
+        "q25": 8.19,
+        "q75": 11.68,
+        "n_frames": 118121
+      },
+      {
+        "model": "YOLOv8-Pose n",
+        "mean": 16.97,
+        "std": 40.32,
+        "median": 11.21,
+        "q25": 9.35,
+        "q75": 13.73,
+        "n_frames": 114908
+      }
+    ],
+    "anova": {
+      "f_statistic": 567.06,
+      "p_value": "1.33e-246",
+      "eta_squared": 0.0032,
+      "effect_interpretation": "klein"
+    },
+    "pairwise_comparisons": [
+      {
+        "comparison": "MediaPipe full vs MoveNet multipose",
+        "mean_diff": 1.69,
+        "t_statistic": 16.46,
+        "p_value": "7.17e-61",
+        "cohens_d": 0.068,
+        "significant_bonferroni": 1
+      },
+      {
+        "comparison": "MediaPipe full vs YOLOv8-Pose n",
+        "mean_diff": -2.58,
+        "t_statistic": -19.07,
+        "p_value": "4.88e-81",
+        "cohens_d": -0.079,
+        "significant_bonferroni": 1
+      },
+      {
+        "comparison": "MoveNet multipose vs YOLOv8-Pose n",
+        "mean_diff": -4.27,
+        "t_statistic": -30.25,
+        "p_value": "1.35e-200",
+        "cohens_d": -0.125,
+        "significant_bonferroni": 1
+      }
+    ],
+    "ranking": [
+      {
+        "rank": 1,
+        "model": "MoveNet multipose",
+        "mean_nmpjpe": 12.7
+      },
+      {
+        "rank": 2,
+        "model": "MediaPipe full",
+        "mean_nmpjpe": 14.39
+      },
+      {
+        "rank": 3,
+        "model": "YOLOv8-Pose n",
+        "mean_nmpjpe": 16.97
+      }
+    ]
+  },
+  "camera_perspective": {
+    "title": "Kamera-Perspektiven-Analyse",
+    "description": "Vergleich Frontal (c17) vs Seitlich (c18) Aufnahmen",
+    "camera_comparison": [
+      {
+        "model": "MediaPipe full",
+        "c17_mean": 15.23,
+        "c17_std": 30.36,
+        "c17_median": 10.83,
+        "c18_mean": 13.6,
+        "c18_std": 12.84,
+        "c18_median": 11.67,
+        "mean_difference": 1.64,
+        "median_difference": -0.85,
+        "t_statistic": 12.23,
+        "p_value": "2.39e-34",
+        "cohens_d": 0.071,
+        "outliers_c17_pct": 2.02,
+        "outliers_c18_pct": 1.36
+      },
+      {
+        "model": "MoveNet multipose",
+        "c17_mean": 14.12,
+        "c17_std": 37.38,
+        "c17_median": 9.23,
+        "c18_mean": 11.37,
+        "c18_std": 8.12,
+        "c18_median": 10.4,
+        "mean_difference": 2.75,
+        "median_difference": -1.17,
+        "t_statistic": 17.76,
+        "p_value": "1.94e-70",
+        "cohens_d": 0.103,
+        "outliers_c17_pct": 1.68,
+        "outliers_c18_pct": 0.48
+      },
+      {
+        "model": "YOLOv8-Pose n",
+        "c17_mean": 20.42,
+        "c17_std": 57.83,
+        "c17_median": 10.5,
+        "c18_mean": 13.95,
+        "c18_std": 9.9,
+        "c18_median": 11.79,
+        "mean_difference": 6.47,
+        "median_difference": -1.29,
+        "t_statistic": 27.23,
+        "p_value": "8.76e-163",
+        "cohens_d": 0.161,
+        "outliers_c17_pct": 2.78,
+        "outliers_c18_pct": 1.21
+      }
+    ],
+    "interpretation": {
+      "mean_vs_median": "Mean suggests c17 worse, but median shows c17 slightly better",
+      "explanation": "c17 has 2-6x more outlier frames (>50% error) that skew the mean",
+      "conclusion": "Frontal view (c17) is generally better for typical frames, but has more edge cases",
+      "practical_significance": "Effect size (Cohen d) is negligible (<0.2) for both mean and median"
+    }
+  },
+  "selection_robustness": {
+    "title": "Selection-Strategie Robustheit",
+    "description": "Wie robust sind die Modelle bei Multi-Person-Szenarien (Coach im Bild)?",
+    "sample_sizes": {
+      "clean_videos": 121,
+      "coach_videos": 5,
+      "coach_video_ids": [
+        "PM_010",
+        "PM_011",
+        "PM_108",
+        "PM_119",
+        "PM_121"
+      ]
+    },
+    "robustness_comparison": [
+      {
+        "model": "MediaPipe full",
+        "clean_mean": 14.39,
+        "coach_mean": 45.38,
+        "absolute_increase": 30.99,
+        "relative_increase_pct": 215.4,
+        "t_statistic": -68.16,
+        "p_value": "0.00e+00",
+        "cohens_d": 0.463,
+        "effect_size": "mittel"
+      },
+      {
+        "model": "MoveNet multipose",
+        "clean_mean": 12.7,
+        "coach_mean": 62.2,
+        "absolute_increase": 49.5,
+        "relative_increase_pct": 389.8,
+        "t_statistic": -90.51,
+        "p_value": "0.00e+00",
+        "cohens_d": 0.579,
+        "effect_size": "mittel"
+      },
+      {
+        "model": "YOLOv8-Pose n",
+        "clean_mean": 16.97,
+        "coach_mean": 66.0,
+        "absolute_increase": 49.03,
+        "relative_increase_pct": 288.9,
+        "t_statistic": -67.26,
+        "p_value": "0.00e+00",
+        "cohens_d": 0.568,
+        "effect_size": "mittel"
+      }
+    ],
+    "selection_strategies": {
+      "MediaPipe full": "Torso-Größe (wählt Person mit größtem Torso)",
+      "MoveNet multipose": "BBox-Area + Score > 0.1",
+      "YOLOv8-Pose n": "BBox-Area + Score > 0.3"
+    },
+    "robustness_ranking": [
+      {
+        "rank": 1,
+        "model": "MediaPipe full",
+        "increase_at_multiperson": "+215.4%"
+      },
+      {
+        "rank": 2,
+        "model": "YOLOv8-Pose n",
+        "increase_at_multiperson": "+288.9%"
+      },
+      {
+        "rank": 3,
+        "model": "MoveNet multipose",
+        "increase_at_multiperson": "+389.8%"
+      }
+    ],
+    "interpretation": {
+      "key_finding": "MediaPipe (Torso-Selection) ist deutlich robuster als BBox-basierte Modelle",
+      "mediapipe_advantage": "Torso-Selection wählt die Person mit dem größten Torso, was typischerweise die nähere (richtige) Person ist",
+      "bbox_problem": "BBox-Selection kann größere Personen im Hintergrund (Coach) fälschlicherweise auswählen",
+      "practical_recommendation": "Für Multi-Person-Szenarien MediaPipe bevorzugen oder Multi-Person-Warnung implementieren"
+    }
+  },
+  "per_joint": {
+    "title": "Per-Joint Fehleranalyse",
+    "description": "Anatomische Analyse der Fehlerverteilung",
+    "joint_camera_effect": [
+      {
+        "model": "MediaPipe full",
+        "joint": "left_shoulder",
+        "c17_mean": 10.95,
+        "c18_mean": 9.2,
+        "difference": 1.74
+      },
+      {
+        "model": "MediaPipe full",
+        "joint": "right_shoulder",
+        "c17_mean": 9.78,
+        "c18_mean": 11.51,
+        "difference": -1.73
+      },
+      {
+        "model": "MediaPipe full",
+        "joint": "left_elbow",
+        "c17_mean": 14.43,
+        "c18_mean": 13.69,
+        "difference": 0.74
+      },
+      {
+        "model": "MediaPipe full",
+        "joint": "right_elbow",
+        "c17_mean": 14.75,
+        "c18_mean": 16.93,
+        "difference": -2.18
+      },
+      {
+        "model": "MediaPipe full",
+        "joint": "left_wrist",
+        "c17_mean": 16.0,
+        "c18_mean": 16.27,
+        "difference": -0.27
+      },
+      {
+        "model": "MediaPipe full",
+        "joint": "right_wrist",
+        "c17_mean": 14.05,
+        "c18_mean": 22.52,
+        "difference": -8.47
+      },
+      {
+        "model": "MediaPipe full",
+        "joint": "left_hip",
+        "c17_mean": 22.61,
+        "c18_mean": 16.16,
+        "difference": 6.46
+      },
+      {
+        "model": "MediaPipe full",
+        "joint": "right_hip",
+        "c17_mean": 21.07,
+        "c18_mean": 14.7,
+        "difference": 6.37
+      },
+      {
+        "model": "MediaPipe full",
+        "joint": "left_knee",
+        "c17_mean": 14.57,
+        "c18_mean": 9.5,
+        "difference": 5.07
+      },
+      {
+        "model": "MediaPipe full",
+        "joint": "right_knee",
+        "c17_mean": 14.05,
+        "c18_mean": 11.77,
+        "difference": 2.29
+      },
+      {
+        "model": "MediaPipe full",
+        "joint": "left_ankle",
+        "c17_mean": 18.37,
+        "c18_mean": 18.43,
+        "difference": -0.06
+      },
+      {
+        "model": "MediaPipe full",
+        "joint": "right_ankle",
+        "c17_mean": 20.74,
+        "c18_mean": 16.09,
+        "difference": 4.64
+      },
+      {
+        "model": "MoveNet multipose",
+        "joint": "left_shoulder",
+        "c17_mean": 14.36,
+        "c18_mean": 10.5,
+        "difference": 3.87
+      },
+      {
+        "model": "MoveNet multipose",
+        "joint": "right_shoulder",
+        "c17_mean": 12.43,
+        "c18_mean": 14.38,
+        "difference": -1.95
+      },
+      {
+        "model": "MoveNet multipose",
+        "joint": "left_elbow",
+        "c17_mean": 18.15,
+        "c18_mean": 14.83,
+        "difference": 3.32
+      },
+      {
+        "model": "MoveNet multipose",
+        "joint": "right_elbow",
+        "c17_mean": 14.71,
+        "c18_mean": 17.75,
+        "difference": -3.04
+      },
+      {
+        "model": "MoveNet multipose",
+        "joint": "left_wrist",
+        "c17_mean": 19.98,
+        "c18_mean": 19.22,
+        "difference": 0.76
+      },
+      {
+        "model": "MoveNet multipose",
+        "joint": "right_wrist",
+        "c17_mean": 16.5,
+        "c18_mean": 24.06,
+        "difference": -7.56
+      },
+      {
+        "model": "MoveNet multipose",
+        "joint": "left_hip",
+        "c17_mean": 18.03,
+        "c18_mean": 11.57,
+        "difference": 6.46
+      },
+      {
+        "model": "MoveNet multipose",
+        "joint": "right_hip",
+        "c17_mean": 15.45,
+        "c18_mean": 10.75,
+        "difference": 4.69
+      },
+      {
+        "model": "MoveNet multipose",
+        "joint": "left_knee",
+        "c17_mean": 14.55,
+        "c18_mean": 8.24,
+        "difference": 6.31
+      },
+      {
+        "model": "MoveNet multipose",
+        "joint": "right_knee",
+        "c17_mean": 12.42,
+        "c18_mean": 8.11,
+        "difference": 4.32
+      },
+      {
+        "model": "MoveNet multipose",
+        "joint": "left_ankle",
+        "c17_mean": 15.64,
+        "c18_mean": 15.52,
+        "difference": 0.12
+      },
+      {
+        "model": "MoveNet multipose",
+        "joint": "right_ankle",
+        "c17_mean": 14.68,
+        "c18_mean": 13.26,
+        "difference": 1.42
+      },
+      {
+        "model": "YOLOv8-Pose n",
+        "joint": "left_shoulder",
+        "c17_mean": 19.58,
+        "c18_mean": 9.99,
+        "difference": 9.59
+      },
+      {
+        "model": "YOLOv8-Pose n",
+        "joint": "right_shoulder",
+        "c17_mean": 16.62,
+        "c18_mean": 13.75,
+        "difference": 2.87
+      },
+      {
+        "model": "YOLOv8-Pose n",
+        "joint": "left_elbow",
+        "c17_mean": 21.92,
+        "c18_mean": 14.41,
+        "difference": 7.51
+      },
+      {
+        "model": "YOLOv8-Pose n",
+        "joint": "right_elbow",
+        "c17_mean": 18.75,
+        "c18_mean": 19.79,
+        "difference": -1.05
+      },
+      {
+        "model": "YOLOv8-Pose n",
+        "joint": "left_wrist",
+        "c17_mean": 23.79,
+        "c18_mean": 18.57,
+        "difference": 5.22
+      },
+      {
+        "model": "YOLOv8-Pose n",
+        "joint": "right_wrist",
+        "c17_mean": 19.98,
+        "c18_mean": 29.79,
+        "difference": -9.81
+      },
+      {
+        "model": "YOLOv8-Pose n",
+        "joint": "left_hip",
+        "c17_mean": 27.27,
+        "c18_mean": 13.66,
+        "difference": 13.61
+      },
+      {
+        "model": "YOLOv8-Pose n",
+        "joint": "right_hip",
+        "c17_mean": 24.14,
+        "c18_mean": 13.89,
+        "difference": 10.25
+      },
+      {
+        "model": "YOLOv8-Pose n",
+        "joint": "left_knee",
+        "c17_mean": 19.34,
+        "c18_mean": 10.07,
+        "difference": 9.27
+      },
+      {
+        "model": "YOLOv8-Pose n",
+        "joint": "right_knee",
+        "c17_mean": 17.98,
+        "c18_mean": 11.88,
+        "difference": 6.1
+      },
+      {
+        "model": "YOLOv8-Pose n",
+        "joint": "left_ankle",
+        "c17_mean": 20.03,
+        "c18_mean": 15.89,
+        "difference": 4.14
+      },
+      {
+        "model": "YOLOv8-Pose n",
+        "joint": "right_ankle",
+        "c17_mean": 19.11,
+        "c18_mean": 14.03,
+        "difference": 5.09
+      }
+    ],
+    "category_analysis": [
+      {
+        "model": "MediaPipe full",
+        "category": "upper_extremity",
+        "c17_mean": 14.81,
+        "c18_mean": 17.35,
+        "difference": -2.54
+      },
+      {
+        "model": "MediaPipe full",
+        "category": "lower_extremity",
+        "c17_mean": 16.93,
+        "c18_mean": 13.95,
+        "difference": 2.99
+      },
+      {
+        "model": "MediaPipe full",
+        "category": "torso",
+        "c17_mean": 16.1,
+        "c18_mean": 12.89,
+        "difference": 3.21
+      },
+      {
+        "model": "MoveNet multipose",
+        "category": "upper_extremity",
+        "c17_mean": 17.33,
+        "c18_mean": 18.96,
+        "difference": -1.63
+      },
+      {
+        "model": "MoveNet multipose",
+        "category": "lower_extremity",
+        "c17_mean": 14.32,
+        "c18_mean": 11.28,
+        "difference": 3.04
+      },
+      {
+        "model": "MoveNet multipose",
+        "category": "torso",
+        "c17_mean": 15.07,
+        "c18_mean": 11.8,
+        "difference": 3.27
+      },
+      {
+        "model": "YOLOv8-Pose n",
+        "category": "upper_extremity",
+        "c17_mean": 21.11,
+        "c18_mean": 20.64,
+        "difference": 0.47
+      },
+      {
+        "model": "YOLOv8-Pose n",
+        "category": "lower_extremity",
+        "c17_mean": 19.12,
+        "c18_mean": 12.96,
+        "difference": 6.15
+      },
+      {
+        "model": "YOLOv8-Pose n",
+        "category": "torso",
+        "c17_mean": 21.9,
+        "c18_mean": 12.82,
+        "difference": 9.08
+      }
+    ],
+    "self_occlusion": {
+      "hypothesis": "Bei seitlicher Ansicht (c18) sollten körperferne Joints (Handgelenke) durch Self-Occlusion höhere Fehler zeigen",
+      "finding": "Obere Extremitäten zeigen bei c18 teilweise NIEDRIGERE Fehler als c17",
+      "explanation": "Mögliche Erklärung: c18 zeigt mehr Tiefenvariation, was die Pose-Schätzung erleichtert"
+    }
+  },
+  "confidence_calibration": {
+    "title": "Confidence-Calibration Analyse",
+    "description": "Korreliert die Modell-Confidence mit dem tatsächlichen Fehler?",
+    "calibration": [
+      {
+        "model": "MediaPipe full",
+        "correlation": -0.274,
+        "p_value": "0.00e+00",
+        "interpretation": "schwach kalibriert"
+      },
+      {
+        "model": "MoveNet multipose",
+        "correlation": -0.315,
+        "p_value": "0.00e+00",
+        "interpretation": "gut kalibriert"
+      },
+      {
+        "model": "YOLOv8-Pose n",
+        "correlation": -0.74,
+        "p_value": "0.00e+00",
+        "interpretation": "gut kalibriert"
+      }
+    ],
+    "binned_analysis": [
+      {
+        "model": "MediaPipe full",
+        "conf_bin": "(0.0, 0.5]",
+        "mean": 261.45,
+        "count": 203
+      },
+      {
+        "model": "MediaPipe full",
+        "conf_bin": "(0.5, 0.7]",
+        "mean": 25.68,
+        "count": 9871
+      },
+      {
+        "model": "MediaPipe full",
+        "conf_bin": "(0.7, 0.85]",
+        "mean": 16.76,
+        "count": 30521
+      },
+      {
+        "model": "MediaPipe full",
+        "conf_bin": "(0.85, 1.0]",
+        "mean": 11.37,
+        "count": 77709
+      },
+      {
+        "model": "MoveNet multipose",
+        "conf_bin": "(0.0, 0.5]",
+        "mean": 134.17,
+        "count": 1907
+      },
+      {
+        "model": "MoveNet multipose",
+        "conf_bin": "(0.5, 0.7]",
+        "mean": 11.59,
+        "count": 62746
+      },
+      {
+        "model": "MoveNet multipose",
+        "conf_bin": "(0.7, 0.85]",
+        "mean": 9.65,
+        "count": 52242
+      },
+      {
+        "model": "MoveNet multipose",
+        "conf_bin": "(0.85, 1.0]",
+        "mean": 10.47,
+        "count": 1226
+      },
+      {
+        "model": "YOLOv8-Pose n",
+        "conf_bin": "(0.0, 0.5]",
+        "mean": 373.89,
+        "count": 1134
+      },
+      {
+        "model": "YOLOv8-Pose n",
+        "conf_bin": "(0.5, 0.7]",
+        "mean": 294.91,
+        "count": 180
+      },
+      {
+        "model": "YOLOv8-Pose n",
+        "conf_bin": "(0.7, 0.85]",
+        "mean": 15.08,
+        "count": 11391
+      },
+      {
+        "model": "YOLOv8-Pose n",
+        "conf_bin": "(0.85, 1.0]",
+        "mean": 12.73,
+        "count": 102203
+      }
+    ],
+    "interpretation": {
+      "ideal": "Negative Korrelation: Höhere Confidence sollte niedrigeren Fehler bedeuten",
+      "finding": "Die Modelle zeigen schwache bis keine Calibration",
+      "implication": "Confidence-Werte sollten nicht direkt als Qualitätsindikator verwendet werden"
+    }
+  },
+  "exercises": {
+    "title": "Übungs-spezifische Analyse",
+    "description": "Performance-Unterschiede zwischen den 6 Übungstypen",
+    "summary": [
+      {
+        "model": "MediaPipe full",
+        "camera": "c17",
+        "mean_nmpjpe": 15.92,
+        "std_nmpjpe": 7.65,
+        "n_videos": 58
+      },
+      {
+        "model": "MediaPipe full",
+        "camera": "c18",
+        "mean_nmpjpe": 13.41,
+        "std_nmpjpe": 3.74,
+        "n_videos": 63
+      },
+      {
+        "model": "MoveNet multipose",
+        "camera": "c17",
+        "mean_nmpjpe": 14.55,
+        "std_nmpjpe": 7.22,
+        "n_videos": 58
+      },
+      {
+        "model": "MoveNet multipose",
+        "camera": "c18",
+        "mean_nmpjpe": 11.5,
+        "std_nmpjpe": 3.16,
+        "n_videos": 63
+      },
+      {
+        "model": "YOLOv8-Pose n",
+        "camera": "c17",
+        "mean_nmpjpe": 20.91,
+        "std_nmpjpe": 10.22,
+        "n_videos": 58
+      },
+      {
+        "model": "YOLOv8-Pose n",
+        "camera": "c18",
+        "mean_nmpjpe": 13.85,
+        "std_nmpjpe": 3.99,
+        "n_videos": 63
+      }
+    ]
+  }
+}

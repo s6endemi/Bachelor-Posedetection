@@ -26,6 +26,8 @@ def main():
     parser.add_argument("--max-frames", type=int, help="Maximum frames per video")
     parser.add_argument("--yolo-size", type=str, default="m", choices=["n", "s", "m", "l", "x"],
                         help="YOLOv8 model size (default: m)")
+    parser.add_argument("--frame-step", type=int, default=1,
+                        help="Process every Nth frame (default: 1 = all frames, 3 = every 3rd)")
 
     args = parser.parse_args()
 
@@ -40,7 +42,7 @@ def main():
     # Estimators initialisieren (3 finale Modelle)
     print("Loading models...")
     estimators = [
-        MediaPipeEstimator(model_complexity=2),      # Heavy, Torso-Selection
+        MediaPipeEstimator(model_complexity=1),      # Full (good balance of speed/accuracy)
         MoveNetMultiPoseEstimator(),                 # MultiPose, BBox-Selection
         YOLOPoseEstimator(model_size=args.yolo_size), # BBox-Selection
     ]
@@ -62,7 +64,8 @@ def main():
     pipeline.run(
         max_videos=args.max_videos,
         max_frames_per_video=args.max_frames,
-        exercises=exercises
+        exercises=exercises,
+        frame_step=args.frame_step
     )
 
 

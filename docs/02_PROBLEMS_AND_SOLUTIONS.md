@@ -504,16 +504,150 @@ MIN_JOINT_CONFIDENCE = 0.5
 
 ---
 
-## Offene Fragen (fuer Full-Run)
+## Problem 8: Coach-Interaktion bei c17-Videos (KORRIGIERT 09.01.2026)
 
-1. **Wie verhält sich MoveNet Thunder vs Lightning?**
-   - Lightning ist schneller aber weniger genau
-   - MultiPose nur als Lightning verfuegbar
+> **WICHTIG:** Die urspruenglichen Zahlen in diesem Abschnitt waren FEHLERHAFT (Bug im Evaluator).
+> Dieser Abschnitt wurde mit korrigierten Zahlen aus der Neu-Evaluation aktualisiert.
 
-2. **Confidence-Thresholds optimieren?**
-   - Aktuell: MediaPipe=0.1, MoveNet=0.1, YOLO=default
-   - Koennte man tunen, aber nicht primaeres Ziel
+### Symptom
+Bei der Neu-Evaluation (09.01.2026) wurden 5 c17-Videos mit signifikant erhoehtem Fehler identifiziert:
+- PM_010-c17, PM_011-c17, PM_108-c17, PM_119-c17, PM_121-c17
 
-3. **Per-Joint Analyse bei hoher Rotation?**
-   - Hypothese: Extremitaeten leiden mehr
-   - Wird im Full-Run analysiert
+### Korrigierte Zahlen (Neu-Evaluation)
+
+| Kamera | MediaPipe | MoveNet | YOLO |
+|--------|-----------|---------|------|
+| c17 | 17.7% | 18.3% | **24.6%** |
+| c18 | 13.4% | 11.5% | 13.9% |
+| **Differenz** | +4.3% | +6.8% | **+10.7%** |
+
+**YOLO hat das groesste c17-Problem, aber nicht so extrem wie zuvor dokumentiert.**
+
+### Detailanalyse der Coach-Videos
+
+| Video | MediaPipe | MoveNet | YOLO | Situation |
+|-------|-----------|---------|------|-----------|
+| PM_010-c17 | 82% | 71% | 70% | Coach interagiert direkt mit Patient |
+| PM_119-c17 | 24% | 74% | 73% | Coach im Bild |
+| PM_121-c17 | 31% | 60% | 75% | Coach im Bild |
+| PM_108-c17 | 17% | 46% | 51% | Coach im Bild |
+| PM_011-c17 | 38% | 60% | 66% | Coach im Bild |
+
+### Wichtige Erkenntnis: Selection-Strategie-Unterschiede
+
+**MediaPipe (Torso-Selection):** Robust bei 4 von 5 Videos
+- Waehlt Person nach Torso-Groesse (Schulter-Huefte-Distanz)
+- Torso-Groesse korreliert mit Kamera-Naehe
+- Coach (weiter weg oder seitlich) hat kleineren Torso
+
+**MoveNet/YOLO (BBox-Selection):** Anfaellig bei Coach-Szenarien
+- Waehlt Person nach Bounding Box Flaeche
+- Coach (groesser, interagierend) hat oft groessere BBox
+- Fuehrt zu falscher Person-Auswahl
+
+### Root Cause (aktualisiert)
+
+Das Problem ist **nicht** primaer der fehlende Score-Filter bei YOLO.
+Das Problem ist **BBox-Selection vs Torso-Selection**:
+
+```
+BBox-Selection (MoveNet, YOLO):
+  Coach steht nah, interagiert → Grosse BBox → Wird gewaehlt (FALSCH)
+
+Torso-Selection (MediaPipe):
+  Coach steht seitlich → Kleinerer Torso im Bild → Patient wird gewaehlt (RICHTIG)
+```
+
+### Warum PM_010 alle Modelle betrifft
+
+Bei PM_010-c17 interagiert der Coach **direkt** mit dem Patienten:
+- Coach ist groesser als Patient
+- Coach steht frontal zur Kamera
+- Auch Torso-Selection versagt hier (Coach hat groesseren Torso)
+
+**Dieses Video sollte als "nicht auswertbar" klassifiziert werden.**
+
+### Strategisches Framing fuer die Thesis
+
+> "Bei 8% der c17-Videos (5/63) trat ein Therapeut ins Bild. Diese Real-World-Situation
+> offenbart kritische Unterschiede in der Robustheit der Person-Selection-Strategien:
+>
+> - **Torso-basierte Selection (MediaPipe):** Robust in 4/5 Faellen, da Torso-Groesse
+>   zuverlaessiger mit Kamera-Distanz korreliert als BBox-Flaeche
+> - **BBox-basierte Selection (MoveNet, YOLO):** Anfaellig, da interagierende Personen
+>   grosse Bounding Boxes erzeugen koennen
+>
+> Bei direkter Coach-Patient-Interaktion (1 Video) versagen alle Selection-Strategien."
+
+### Empfehlung: Video-Kategorisierung
+
+Fuer saubere Analyse sollten Videos kategorisiert werden:
+
+1. **Clean (121 Videos):** Keine zweite Person im Bild
+2. **Coach-Robust (4 Videos):** Coach im Bild, aber MediaPipe funktioniert
+3. **Coach-Critical (1 Video):** PM_010-c17 - alle Modelle versagen
+
+### Fuer Previa Health (aktualisiert)
+
+| Empfehlung | Details |
+|------------|---------|
+| **Multi-Person Detection** | App sollte warnen wenn >1 Person erkannt |
+| **MediaPipe bevorzugen** | Robustere Selection bei Multi-Person |
+| **Therapeut-Protokoll** | Therapeut sollte aus Kamera-Sicht treten |
+| **Fallback** | Bei erkannter Multi-Person: Frame verwerfen |
+
+---
+
+## Korrektur der alten Evaluations-Fehler (Problem 9)
+
+### Symptom
+Die urspruengliche Dokumentation enthielt falsche Zahlen:
+- YOLO c17: 54.9% (FALSCH) → **24.6%** (KORREKT)
+- Videos >30%: 49.2% (FALSCH) → **25.4%** (KORREKT)
+
+### Root Cause
+Der alte Evaluator-Code beruecksichtigte `frame_step=3` nicht korrekt:
+
+```python
+# FALSCH (alter Code):
+for frame_idx in range(num_frames):
+    pred_frame = predictions[frame_idx]
+    gt_frame = gt_2d[frame_idx]  # Falsch! Sollte frame_idx * 3 sein
+
+# KORREKT (neuer Code):
+for i in range(len(predictions)):
+    gt_idx = i * frame_step  # frame_step = 3
+    gt_frame = gt_2d[gt_idx]
+```
+
+### Loesung
+Neues Evaluation-Script erstellt: `run_evaluation.py`
+- Beruecksichtigt frame_step korrekt
+- Reproduzierbare Ergebnisse
+- Ergebnisse in `data/evaluation_results.csv`
+
+### Lesson Learned
+> **Frame-Alignment ist kritisch!** Bei der Evaluation muss das gleiche Frame-Stepping
+> wie bei der Inference verwendet werden. Predictions[i] entspricht Video-Frame[i * step].
+
+---
+
+## Aktualisierte Ergebnisse (Neu-Evaluation 09.01.2026)
+
+### Modell-Ranking (korrigiert)
+
+| Modell | NMPJPE | Std | Bewertung |
+|--------|--------|-----|-----------|
+| **MoveNet** | **14.9%** | 11.3% | Beste Wahl |
+| MediaPipe | 15.6% | 8.8% | Gut, robust bei Multi-Person |
+| YOLO | 19.2% | 12.9% | c17-Problem |
+
+### Rotations-Effekt (c18-only, sauber)
+
+| Rotation | MediaPipe | MoveNet | YOLO |
+|----------|-----------|---------|------|
+| 30-40 (schraeg) | 10.2% | 9.7% | 10.8% |
+| 70-90 (seitlich) | 15.5% | 12.3% | 15.8% |
+| **Anstieg** | **+52%** | **+27%** | **+46%** |
+
+MoveNet zeigt den geringsten Rotations-Effekt!

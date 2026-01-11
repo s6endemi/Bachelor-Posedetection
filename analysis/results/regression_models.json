@@ -1,0 +1,56 @@
+{
+  "MediaPipe full": {
+    "linear": {
+      "intercept": 13.576684082145352,
+      "slope": 0.01763802252023715,
+      "r_squared": 0.0004630376936278505,
+      "interpretation": "NMPJPE = 13.58 + 0.018 \u00d7 Rotation"
+    },
+    "quadratic": {
+      "coefficients": [
+        0.0013520763632703875,
+        -0.10421750419491743,
+        15.252543443657304
+      ],
+      "r_squared": 0.0016124474897829533,
+      "interpretation": "NMPJPE = 15.25 + -0.104\u00d7R + 0.00135\u00d7R\u00b2"
+    },
+    "better_fit": "linear"
+  },
+  "MoveNet multipose": {
+    "linear": {
+      "intercept": 13.537511863347298,
+      "slope": -0.01823327260160427,
+      "r_squared": 0.0003700947599698343,
+      "interpretation": "NMPJPE = 13.54 + -0.018 \u00d7 Rotation"
+    },
+    "quadratic": {
+      "coefficients": [
+        0.0009870631199391908,
+        -0.10722307890560172,
+        14.762741057103279
+      ],
+      "r_squared": 0.0008281349184582343,
+      "interpretation": "NMPJPE = 14.76 + -0.107\u00d7R + 0.00099\u00d7R\u00b2"
+    },
+    "better_fit": "linear"
+  },
+  "YOLOv8-Pose n": {
+    "linear": {
+      "intercept": 19.8613032239105,
+      "slope": -0.06280345912176184,
+      "r_squared": 0.0019352708204710466,
+      "interpretation": "NMPJPE = 19.86 + -0.063 \u00d7 Rotation"
+    },
+    "quadratic": {
+      "coefficients": [
+        0.003749561620647423,
+        -0.40230941237545315,
+        24.55318419320362
+      ],
+      "r_squared": 0.004800412581381641,
+      "interpretation": "NMPJPE = 24.55 + -0.402\u00d7R + 0.00375\u00d7R\u00b2"
+    },
+    "better_fit": "linear"
+  }
+}

@@ -1,0 +1,568 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{float}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{amsmath}
+\usepackage{siunitx}
+\usepackage{multirow}
+\usepackage{colortbl}
+\usepackage{enumitem}
+\usepackage{titlesec}
+
+% Colors
+\definecolor{bestcolor}{RGB}{200, 230, 200}
+\definecolor{worstcolor}{RGB}{255, 220, 220}
+\definecolor{neutralcolor}{RGB}{240, 240, 240}
+
+\titleformat{\section}{\large\bfseries}{\thesection}{1em}{}
+\titleformat{\subsection}{\normalsize\bfseries}{\thesubsection}{1em}{}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.5em}
+
+\title{\textbf{Pose Estimation Evaluation}\\[0.3em]\large Vollständige Ergebnisübersicht}
+\author{Eren}
+\date{Januar 2026}
+
+\begin{document}
+\maketitle
+
+%==============================================================================
+\section*{Executive Summary}
+%==============================================================================
+
+\begin{table}[H]
+\centering
+\begin{tabular}{@{}ll@{}}
+\toprule
+\textbf{Erkenntnis} & \textbf{Details} \\
+\midrule
+Beste Genauigkeit & MoveNet (11.5\% NMPJPE bereinigt) \\
+Robusteste Selection & MediaPipe ($\sim$2x besser bei Multi-Person) \\
+Rotationseffekt & +27--38\% Fehleranstieg bei seitlicher Ansicht \\
+Hauptproblem & c17-Kamera hat 10x mehr Person-Switch-Frames \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Datenbasis:} 363.529 Frames aus 126 Videos (REHAB24-6 Dataset)
+
+%==============================================================================
+\section{Datenbasis und Methodik}
+%==============================================================================
+
+\subsection{Dataset}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{@{}ll@{}}
+\toprule
+Eigenschaft & Wert \\
+\midrule
+Dataset & REHAB24-6 (Zenodo) \\
+Videos & 126 (21 Patienten $\times$ 6 Übungen) \\
+Kameras & c17 (frontal), c18 (lateral) \\
+Analysierte Frames & 363.529 \\
+Frame-Step & 3 (jeder 3. Frame bei 30fps = 10Hz) \\
+Ground Truth & Motion Capture (optische Marker) \\
+\bottomrule
+\end{tabular}
+\caption{Dataset-Übersicht}
+\end{table}
+
+\subsection{Video-Kategorisierung}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{@{}lcl@{}}
+\toprule
+Kategorie & Anzahl & Beschreibung \\
+\midrule
+Clean & 121 & Keine permanente zweite Person \\
+Coach & 5 & Therapeut dauerhaft im Bild \\
+\bottomrule
+\end{tabular}
+\caption{Video-Kategorisierung. Auch ``Clean''-Videos haben sporadische Multi-Person-Frames.}
+\end{table}
+
+\subsection{Modelle}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{@{}llll@{}}
+\toprule
+Modell & Entwickler & Keypoints & Selection-Strategie \\
+\midrule
+MediaPipe Pose & Google & 33 $\rightarrow$ 12 & Torso-Größe \\
+MoveNet MultiPose & Google/TF & 17 $\rightarrow$ 12 & BBox-Fläche \\
+YOLOv8-Pose Nano & Ultralytics & 17 $\rightarrow$ 12 & BBox-Fläche \\
+\bottomrule
+\end{tabular}
+\caption{Evaluierte Modelle. Alle sind für Mobile-/On-Device-Nutzung optimiert.}
+\end{table}
+
+\subsection{Metrik: NMPJPE}
+
+\textbf{Normalized Mean Per Joint Position Error} -- der durchschnittliche Gelenkfehler als Prozent der Torso-Länge (Schulter-Mitte zu Hüfte-Mitte).
+
+\begin{itemize}[nosep]
+    \item 10\% NMPJPE $\approx$ 5cm Fehler pro Gelenk (bei 50cm Torso)
+    \item 15\% NMPJPE $\approx$ 7.5cm Fehler pro Gelenk
+    \item $>$100\% NMPJPE = Modell trackt falsche Person
+\end{itemize}
+
+\subsection{Confidence-Thresholds}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{@{}lll@{}}
+\toprule
+Modell & Threshold & Begründung \\
+\midrule
+MediaPipe & 0.1 (Detection) & Default 0.5 zu strikt (29\% Failures) \\
+MoveNet & 0.1 (Score) & Niedrig für Robustheit \\
+YOLO & 0.3 (Joint Conf.) & Balance Robustheit/Qualität \\
+\bottomrule
+\end{tabular}
+\caption{Verwendete Confidence-Thresholds für die Evaluation.}
+\end{table}
+
+%==============================================================================
+\section{Modell-Ranking}
+%==============================================================================
+
+\subsection{Gesamtergebnis (Clean Data)}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{@{}lcccccc@{}}
+\toprule
+Modell & N Frames & Mean & \textbf{Median} & Std & P90 & P95 \\
+\midrule
+MediaPipe & 118.305 & 14.5\% & 11.2\% & 23.1\% & 17.0\% & 22.8\% \\
+\rowcolor{bestcolor}
+\textbf{MoveNet} & 118.472 & 14.8\% & \textbf{10.4\%} & 32.6\% & 16.8\% & 20.9\% \\
+YOLO & 115.001 & 17.7\% & 11.3\% & 42.5\% & 20.2\% & 27.4\% \\
+\bottomrule
+\end{tabular}
+\caption{Gesamtergebnis. Der \textbf{Median} ist aussagekräftiger als der Mean, da er robust gegen Ausreißer ist. MoveNet erreicht den besten Median (10.4\%).}
+\end{table}
+
+\textbf{Beobachtung:} YOLO's hoher Mean (17.7\%) und extreme Standardabweichung (42.5\%) deuten auf viele Ausreißer hin, nicht auf generell schlechtere Genauigkeit.
+
+\subsection{Bereinigtes Ranking (ohne Person-Switch-Frames)}
+
+Nach Entfernung von Frames mit $>$100\% Fehler (1.13\% aller Frames):
+
+\begin{table}[H]
+\centering
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+Modell & Raw Mean & \textbf{Bereinigt Mean} & Raw Std & \textbf{Bereinigt Std} \\
+\midrule
+\rowcolor{bestcolor}
+\textbf{MoveNet} & 14.8\% & \textbf{11.5\%} & 32.6\% & \textbf{5.5\%} \\
+MediaPipe & 14.5\% & 12.5\% & 23.1\% & 7.2\% \\
+YOLO & 17.7\% & 12.9\% & 42.5\% & 6.8\% \\
+\bottomrule
+\end{tabular}
+\caption{Nach Bereinigung sind alle Modelle ähnlich gut (11--13\%). Die Unterschiede kommen fast ausschließlich von Ausreißern.}
+\end{table}
+
+\subsection{Statistische Signifikanz}
+
+\textbf{ANOVA:} $F = 316.30$, $p < 0.001$ -- signifikanter Unterschied zwischen Modellen.
+
+\begin{table}[H]
+\centering
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+Vergleich & Mean Diff & Cohen's $d$ & $p$-Wert & Signifikant \\
+\midrule
+MediaPipe vs MoveNet & $-0.25\%$ & $-0.009$ & 0.098 & Nein \\
+MediaPipe vs YOLO & $-3.15\%$ & $-0.092$ & $<0.001$ & Ja \\
+MoveNet vs YOLO & $-2.90\%$ & $-0.077$ & $<0.001$ & Ja \\
+\bottomrule
+\end{tabular}
+\caption{Pairwise t-Tests (Bonferroni-korrigiert). MediaPipe und MoveNet sind statistisch nicht unterscheidbar. Beide sind signifikant besser als YOLO.}
+\end{table}
+
+%==============================================================================
+\section{Kamera-Analyse (c17 vs c18)}
+%==============================================================================
+
+\subsection{Das Person-Switch-Problem}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+Modell & c17 $>$100\% & c17 Rate & c18 $>$100\% & c18 Rate \\
+\midrule
+MediaPipe & 906 & 1.59\% & 187 & 0.31\% \\
+MoveNet & 1.213 & 2.12\% & 95 & 0.16\% \\
+\rowcolor{worstcolor}
+YOLO & 1.500 & 2.79\% & 79 & 0.13\% \\
+\bottomrule
+\end{tabular}
+\caption{Frames mit $>$100\% Fehler nach Kamera. c17 (frontal) hat \textbf{5--21x mehr} Person-Switch-Events als c18.}
+\end{table}
+
+\textbf{Erklärung:} c17 zeigt häufiger Situationen mit mehreren Personen im Bild (Therapeut, Hintergrund). Das BBox-basierte Selection bei MoveNet/YOLO versagt hier öfter.
+
+\subsection{Outlier-Verteilung nach Schwellenwert}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{@{}lcccccc@{}}
+\toprule
+ & \multicolumn{3}{c}{\textbf{c17}} & \multicolumn{3}{c}{\textbf{c18}} \\
+Modell & $>$30\% & $>$50\% & $>$100\% & $>$30\% & $>$50\% & $>$100\% \\
+\midrule
+MediaPipe & 1.974 & 1.239 & 906 & 1.759 & 855 & 187 \\
+MoveNet & 1.614 & 1.309 & 1.213 & 1.126 & 375 & 95 \\
+YOLO & 2.049 & 1.584 & 1.500 & 2.537 & 720 & 79 \\
+\bottomrule
+\end{tabular}
+\caption{Anzahl Frames über verschiedenen NMPJPE-Schwellenwerten. c17 hat deutlich mehr extreme Ausreißer.}
+\end{table}
+
+\subsection{Bereinigter Kamera-Vergleich}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+Modell & c17 Raw & c17 Bereinigt & c18 Raw & c18 Bereinigt \\
+\midrule
+MediaPipe & 15.5\% & 12.0\% & 13.6\% & 13.1\% \\
+MoveNet & 16.8\% & \textbf{10.3\%} & 12.8\% & 12.6\% \\
+YOLO & 21.3\% & 11.3\% & 14.5\% & 14.3\% \\
+\bottomrule
+\end{tabular}
+\caption{Nach Bereinigung ist c17 (frontal) \textbf{1--2\% besser} als c18 (lateral) -- wie erwartet.}
+\end{table}
+
+%==============================================================================
+\section{Rotations-Analyse}
+%==============================================================================
+
+\subsection{Datenverteilung und Kamera-Coverage}
+
+Die Rotationswinkel sind \textbf{bimodal verteilt} -- Patienten stehen entweder frontal oder seitlich zur Kamera. Die beiden Kameras decken unterschiedliche Winkelbereiche ab:
+
+\begin{table}[H]
+\centering
+\begin{tabular}{@{}lccc@{}}
+\toprule
+Rotation & c17 Frames & c18 Frames & Gesamt \\
+\midrule
+0--10° (frontal) & $\sim$15.700 & -- & $\sim$15.700 \\
+10--20° & $\sim$13.700 & -- & $\sim$13.700 \\
+20--30° & $\sim$1.900 & $\sim$15.100 & $\sim$17.000 \\
+30--40° & $\sim$440 & $\sim$9.000 & $\sim$9.500 \\
+40--50° & $\sim$1.100 & $\sim$1.100 & $\sim$2.200 \\
+50--60° & $\sim$8.500 & $\sim$560 & $\sim$9.000 \\
+60--70° & $\sim$14.800 & $\sim$2.700 & $\sim$17.500 \\
+70--80° & -- & $\sim$16.400 & $\sim$16.400 \\
+80--90° (lateral) & -- & $\sim$16.200 & $\sim$16.200 \\
+\bottomrule
+\end{tabular}
+\caption{Rotations-Coverage nach Kamera. c17 deckt frontale (0--20°), c18 laterale (70--90°) Perspektiven ab. Der Überlappungsbereich (20--70°) hat weniger Daten.}
+\end{table}
+
+\textbf{Implikation:} Für eine vollständige 0--90° Rotationsanalyse müssen beide Kameras kombiniert werden. Einzelkamera-Analysen zeigen nur Teilbereiche.
+
+%------------------------------------------------------------------------------
+\subsection{Szenario 1: Kombinierte Rotation (c17 + c18, ohne >100\% Frames)}
+%------------------------------------------------------------------------------
+
+Durch Kombination beider Kameras erhalten wir den vollständigen Rotationsbereich:
+
+\begin{table}[H]
+\centering
+\begin{tabular}{@{}lccccc@{}}
+\toprule
+Bucket & MediaPipe & MoveNet & YOLO & N Frames & Quelle \\
+\midrule
+\rowcolor{bestcolor}
+0--10° & 10.1\% & \textbf{9.3\%} & 9.5\% & $\sim$15.300 & c17 only \\
+\rowcolor{bestcolor}
+10--20° & 10.3\% & \textbf{8.4\%} & 9.3\% & $\sim$13.300 & c17 only \\
+20--30° & 10.5\% & 10.0\% & 10.8\% & $\sim$17.000 & c17+c18 \\
+30--40° & 10.6\% & 9.9\% & 10.7\% & $\sim$9.500 & c17+c18 \\
+40--50° & 11.0\% & 11.1\% & 13.9\% & $\sim$2.100 & c17+c18 \\
+50--60° & 10.8\% & 10.2\% & 11.2\% & $\sim$9.000 & c17+c18 \\
+60--70° & 12.5\% & 11.0\% & 12.3\% & $\sim$17.400 & c17+c18 \\
+70--80° & 12.4\% & 12.1\% & 13.1\% & $\sim$16.300 & c18 only \\
+\rowcolor{worstcolor}
+80--90° & 13.3\% & 13.8\% & \textbf{14.9\%} & $\sim$16.200 & c18 only \\
+\midrule
+\textbf{Trend} & +32\% & +64\% & +60\% & & frontal$\rightarrow$lateral \\
+\bottomrule
+\end{tabular}
+\caption{Kombinierte Rotationsanalyse (beide Kameras, bereinigt). Median NMPJPE steigt von frontal zu lateral um 32--64\%.}
+\end{table}
+
+\textbf{Beobachtungen:}
+\begin{itemize}[nosep]
+    \item Frontale Ansicht (0--20°) liefert beste Ergebnisse (Unterschied zwischen 0--10° und 10--20° ist $<$1\%)
+    \item MoveNet zeigt stärksten relativen Anstieg (+64\%), aber startet mit niedrigstem Basiswert
+    \item MediaPipe ist am stabilsten über alle Winkel (+32\% Anstieg)
+    \item YOLO hat konsistent höhere Fehler bei lateraler Ansicht
+\end{itemize}
+
+%------------------------------------------------------------------------------
+\subsection{Szenario 2: c17 Kamera (frontal-orientiert)}
+%------------------------------------------------------------------------------
+
+c17 zeigt primär frontale Perspektiven (0--70°), hat aber mehr Multi-Person-Probleme:
+
+\begin{table}[H]
+\centering
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+Bucket & MediaPipe & MoveNet & YOLO & N Frames \\
+\midrule
+\rowcolor{bestcolor}
+0--10° & 10.1\% & \textbf{9.3\%} & 9.5\% & $\sim$15.300 \\
+10--20° & 10.3\% & \textbf{8.4\%} & 9.3\% & $\sim$13.300 \\
+20--30° & 11.3\% & 11.1\% & 11.1\% & $\sim$1.800 \\
+30--40° & 11.4\% & 10.4\% & 12.9\% & $\sim$400 \\
+40--50° & 10.8\% & 10.4\% & 13.4\% & $\sim$970 \\
+50--60° & 10.7\% & 10.0\% & 10.9\% & $\sim$8.400 \\
+60--70° & 12.4\% & 10.7\% & 11.9\% & $\sim$14.700 \\
+\bottomrule
+\end{tabular}
+\caption{c17 Rotationsanalyse (ohne >100\% Frames). MoveNet erreicht besten Wert bei 10--20° (8.4\%), MediaPipe bei 0--10° (10.1\%).}
+\end{table}
+
+\textbf{c17-Besonderheit:} Die frontale Kamera hat 2.15\% Person-Switch-Frames vs nur 0.20\% bei c18. Nach Bereinigung zeigt c17 jedoch \textbf{bessere} Ergebnisse als c18 bei vergleichbaren Winkeln.
+
+%------------------------------------------------------------------------------
+\subsection{Szenario 3: c18 Kamera (lateral-orientiert)}
+%------------------------------------------------------------------------------
+
+c18 zeigt primär seitliche Perspektiven (20--90°), mit weniger Multi-Person-Störungen:
+
+\begin{table}[H]
+\centering
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+Bucket & MediaPipe & MoveNet & YOLO & N Frames \\
+\midrule
+20--30° & 10.5\% & 10.0\% & 10.8\% & $\sim$15.100 \\
+30--40° & 10.6\% & \textbf{9.9\%} & 10.7\% & $\sim$9.000 \\
+40--50° & 11.2\% & 11.7\% & 14.3\% & $\sim$1.100 \\
+50--60° & 11.6\% & 11.9\% & 14.0\% & $\sim$550 \\
+60--70° & 13.1\% & 12.7\% & 14.0\% & $\sim$2.700 \\
+70--80° & 12.4\% & 12.1\% & 13.1\% & $\sim$16.300 \\
+\rowcolor{worstcolor}
+80--90° & 13.3\% & 13.8\% & \textbf{14.9\%} & $\sim$16.200 \\
+\midrule
+\textbf{Anstieg} & +27\% & +38\% & +39\% & & 20--30° $\rightarrow$ 80--90° \\
+\bottomrule
+\end{tabular}
+\caption{c18 Rotationsanalyse (ohne >100\% Frames). Konsistenter Fehleranstieg zur seitlichen Ansicht.}
+\end{table}
+
+\textbf{Warum c18 für Rotationseffekt?} c18 hat weniger Confounding durch Person-Switch und zeigt den ``reinen'' Rotationseffekt klarer.
+
+%------------------------------------------------------------------------------
+\subsection{Vergleich: Raw vs Bereinigt}
+%------------------------------------------------------------------------------
+
+\begin{table}[H]
+\centering
+\begin{tabular}{@{}lccc|ccc@{}}
+\toprule
+ & \multicolumn{3}{c|}{\textbf{Raw (alle Frames)}} & \multicolumn{3}{c}{\textbf{Bereinigt (ohne >100\%)}} \\
+Bucket & MP & MN & YOLO & MP & MN & YOLO \\
+\midrule
+0--10° (c17) & 10.1\% & 9.4\% & 9.6\% & 10.1\% & 9.3\% & 9.5\% \\
+10--20° (c17) & 10.4\% & 8.5\% & 9.3\% & 10.3\% & 8.4\% & 9.3\% \\
+80--90° (c18) & 13.3\% & 13.8\% & 14.9\% & 13.3\% & 13.8\% & 14.9\% \\
+\bottomrule
+\end{tabular}
+\caption{Raw vs bereinigt zeigt minimale Unterschiede -- die Rotation-Buckets sind bereits relativ sauber.}
+\end{table}
+
+%------------------------------------------------------------------------------
+\subsection{Zusammenfassung Rotationseffekt}
+%------------------------------------------------------------------------------
+
+\begin{table}[H]
+\centering
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+Modell & Bestes Bucket & Schlechtestes & Absoluter Anstieg & Relativer Anstieg \\
+\midrule
+\rowcolor{bestcolor}
+MediaPipe & 0--10° (10.1\%) & 80--90° (13.3\%) & +3.2\% & \textbf{+32\%} \\
+MoveNet & 10--20° (8.4\%) & 80--90° (13.8\%) & +5.4\% & +64\% \\
+YOLO & 10--20° (9.3\%) & 80--90° (14.9\%) & +5.6\% & +60\% \\
+\bottomrule
+\end{tabular}
+\caption{MediaPipe zeigt die geringste Rotations-Sensitivität (+32\% relativ). Bestes Bucket variiert: MediaPipe bei 0--10°, MoveNet/YOLO bei 10--20° (Unterschied $<$1\%).}
+\end{table}
+
+%==============================================================================
+\section{Selection-Robustheit}
+%==============================================================================
+
+\subsection{Coach-Impact-Analyse}
+
+5 Videos enthielten einen Therapeuten dauerhaft im Bild. Dies offenbart kritische Unterschiede:
+
+\begin{table}[H]
+\centering
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+Modell & Clean Mean & Coach Mean & Anstieg & Selection \\
+\midrule
+\rowcolor{bestcolor}
+\textbf{MediaPipe} & 14.5\% & 44.8\% & \textbf{+209\%} & Torso-Größe \\
+MoveNet & 14.8\% & 64.9\% & +340\% & BBox-Fläche \\
+YOLO & 17.7\% & 66.1\% & +274\% & BBox-Fläche \\
+\bottomrule
+\end{tabular}
+\caption{MediaPipe's Torso-basierte Selection ist $\sim$2x robuster als BBox-Selection.}
+\end{table}
+
+\subsection{Warum Torso-Selection besser funktioniert}
+
+\begin{itemize}[nosep]
+    \item \textbf{Torso-Größe} (Schulter-Hüfte-Abstand) korreliert mit Kamera-Distanz
+    \item \textbf{BBox-Fläche} misst ``Ausbreitung'' (Armposition), nicht tatsächliche Größe
+    \item Ein Therapeut mit ausgestreckten Armen hat große BBox aber kleinen Torso
+\end{itemize}
+
+%==============================================================================
+\section{Per-Joint-Analyse}
+%==============================================================================
+
+\begin{table}[H]
+\centering
+\begin{tabular}{@{}lccc@{}}
+\toprule
+Körperregion & MediaPipe & MoveNet & YOLO \\
+\midrule
+Schultern & 7--8\% & 8--10\% & 8--10\% \\
+Ellbogen & 9\% & 10\% & 10\% \\
+Handgelenke & 9--10\% & 11--12\% & 12--13\% \\
+\rowcolor{worstcolor}
+Hüften & \textbf{16--17\%} & 10--11\% & 14--15\% \\
+Knie & 7--8\% & 6\% & 7--8\% \\
+Knöchel & 12\% & 10\% & 10\% \\
+\bottomrule
+\end{tabular}
+\caption{Median NMPJPE nach Körperregion. MediaPipe zeigt auffällig hohe Hüft-Fehler.}
+\end{table}
+
+\textbf{Beobachtung:} MediaPipe hat überdurchschnittlich hohe Hüft-Fehler (16--17\% vs 10--15\% bei anderen). Dies ist ein architekturspezifisches Muster.
+
+%==============================================================================
+\section{Übungs-Analyse}
+%==============================================================================
+
+\begin{table}[H]
+\centering
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+Übung & MediaPipe & MoveNet & YOLO & Schwierigkeit \\
+\midrule
+Ex1 & 11.4\% & 10.2\% & 10.4\% & Leicht \\
+\rowcolor{bestcolor}
+Ex2 & 10.8\% & \textbf{9.4\%} & 10.4\% & Leichteste \\
+\rowcolor{worstcolor}
+Ex3 & 12.6\% & 13.6\% & \textbf{14.2\%} & Schwierigste \\
+Ex4 & 11.3\% & 11.2\% & 12.0\% & Mittel \\
+Ex5 & 11.0\% & 11.2\% & 13.1\% & Mittel \\
+Ex6 & 11.3\% & 10.2\% & 11.6\% & Leicht \\
+\bottomrule
+\end{tabular}
+\caption{Median NMPJPE nach Übung. Ex3 ist für alle Modelle am schwierigsten.}
+\end{table}
+
+%==============================================================================
+\section{Zusammenfassung und Empfehlungen}
+%==============================================================================
+
+\subsection{Zentrale Erkenntnisse}
+
+\begin{enumerate}[nosep]
+    \item \textbf{Modell-Ranking:} MoveNet $\approx$ MediaPipe $>$ YOLO (bereinigt: 11.5\% vs 12.5\% vs 12.9\%)
+    \item \textbf{Ausreißer dominieren:} Die Mean-Unterschiede kommen fast ausschließlich von Person-Switch-Events
+    \item \textbf{c17-Problem:} Die frontale Kamera hat 10x mehr Multi-Person-Probleme
+    \item \textbf{Selection-Strategie kritisch:} Torso-Selection (MediaPipe) ist 2x robuster als BBox-Selection
+    \item \textbf{Rotationseffekt messbar:} +27--39\% Fehler bei seitlicher vs schräger Ansicht
+\end{enumerate}
+
+\subsection{Empfehlungen für Anwendungen}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{@{}lll@{}}
+\toprule
+Szenario & Empfehlung & Begründung \\
+\midrule
+Single-Person garantiert & MoveNet & Beste Genauigkeit (10.4\% Median) \\
+Multi-Person möglich & MediaPipe & 2x robustere Selection \\
+Ressourcen-limitiert & YOLO Nano & Schnellste Inferenz \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Implementierungshinweise}
+
+\begin{itemize}[nosep]
+    \item \textbf{Multi-Person-Warnung:} App sollte warnen wenn $>$1 Person erkannt
+    \item \textbf{Seitliche Ansicht:} Fehler steigt um $\sim$30\%, User zur Neupositionierung auffordern
+    \item \textbf{Extreme-Frame-Detection:} NMPJPE $>$100\% automatisch als ungültig markieren
+\end{itemize}
+
+%==============================================================================
+\section{Limitationen}
+%==============================================================================
+
+\begin{itemize}[nosep]
+    \item \textbf{Bimodale Rotation:} Keine kontinuierliche Rotation-Analyse möglich
+    \item \textbf{Kleine Coach-Stichprobe:} Selection-Robustheit basiert auf nur 5 Videos
+    \item \textbf{Dataset-spezifisch:} Ergebnisse gelten für Rehabilitations-Kontext
+    \item \textbf{Nur mobile Varianten:} Keine Aussage über Server-Modelle
+\end{itemize}
+
+%==============================================================================
+\section*{Anhang: Datengrundlage}
+%==============================================================================
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{@{}ll@{}}
+\toprule
+Datei & Beschreibung \\
+\midrule
+\texttt{frame\_level\_data.csv} & 363.529 Frames mit allen Metriken \\
+\texttt{rotation\_analysis.csv} & NMPJPE pro 10°-Bucket \\
+\texttt{outlier\_analysis.csv} & Video-Level Ausreißer \\
+\texttt{per\_joint\_analysis.csv} & Joint-Level Fehler \\
+\texttt{summary\_statistics.json} & Maschinenlesbare Zusammenfassung \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\vspace{1em}
+\textbf{Reproduktion:}
+\begin{verbatim}
+cd C:/Users/Eren/bachelor
+.venv/Scripts/python analysis/comprehensive_analysis.py
+.venv/Scripts/python analysis/extended_analysis.py
+\end{verbatim}
+
+\end{document}

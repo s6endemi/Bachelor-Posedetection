@@ -1,6 +1,9 @@
 # Results: Ergebnisse
 
-Dieses Dokument enthält alle Ergebnisse der Experimente. Es wird nach dem Full-Run vervollständigt.
+Dieses Dokument enthält alle Ergebnisse der Experimente.
+
+> **WICHTIG (09.01.2026):** Alte Zahlen waren fehlerhaft (Bug: frame_step nicht berücksichtigt).
+> Alle Zahlen wurden mit `run_evaluation.py` neu berechnet und Videos kategorisiert.
 
 ---
 
@@ -9,196 +12,252 @@ Dieses Dokument enthält alle Ergebnisse der Experimente. Es wird nach dem Full-
 | Phase | Status |
 |-------|--------|
 | Mini-Test (500 Frames) | ✅ Abgeschlossen |
-| Full-Run (~185k Frames) | ⬜ Ausstehend |
+| Full-Run (122.400 Frames) | ✅ Abgeschlossen |
+| Neu-Evaluation | ✅ Abgeschlossen (korrigiert) |
+| **Video-Kategorisierung** | ✅ **Abgeschlossen** |
 | Statistische Analyse | ⬜ Ausstehend |
 | Visualisierungen | ⬜ Ausstehend |
 
 ---
 
-## Mini-Test Ergebnisse (Vorläufig)
+## Video-Kategorisierung
 
-### Datenbasis
-- 5 Videos × 100 Frames = 500 Frames
-- Modelle: MediaPipe Heavy, MoveNet MultiPose, YOLO Nano
-
-### Detection Performance
-
-| Modell | Detection Failures | Wrong Person | Valid Frames |
-|--------|-------------------|--------------|--------------|
-| MediaPipe | 2 (0.4%) | 0 | 498 (99.6%) |
-| MoveNet MultiPose | 0 (0.0%) | 0 | 500 (100%) |
-| YOLO | 0 (0.0%) | 0 | 500 (100%) |
-
-### NMPJPE nach Rotationswinkel (Vorläufig)
-
-| Winkel | MediaPipe | MoveNet MP | YOLO | N |
-|--------|-----------|------------|------|---|
-| 0-10° | 10.4% | ~14% | 10.4% | ~100 |
-| 10-20° | 11.2% | ~14% | 11.0% | ~80 |
-| 20-30° | 11.8% | ~14% | 11.5% | ~70 |
-| 30-40° | 12.5% | ~14% | 12.3% | ~60 |
-| 40-50° | 13.6% | ~14% | 13.8% | ~50 |
-| 50-60° | 19.6% | ~14% | 14.3% | ~40 |
-
-*N = Anzahl Frames in diesem Bin (geschätzt)*
-
-### Vorläufige Beobachtungen
-
-1. **MediaPipe** zeigt Degradation bei höheren Winkeln
-2. **MoveNet** ist überraschend stabil (~14% konstant)
-3. **YOLO** ähnlich wie MediaPipe, aber weniger Streuung
-4. **Alle** haben niedrige Fehlerraten (<1%)
+| Kategorie | Beschreibung | Anzahl |
+|-----------|--------------|--------|
+| **Clean** | Keine Multi-Person-Probleme | 121 (58 c17, 63 c18) |
+| **Coach** | Therapeut im Bild | 5 (alle c17) |
+| **Total** | | 126 |
 
 ---
 
-## Full-Run Ergebnisse
+## HAUPT-ERGEBNIS: Clean Data Ranking
 
-*Wird nach Abschluss des Full-Runs ausgefüllt*
+**Auf sauberen Daten (121 Videos) ohne Coach-Interaktion:**
 
-### Geplante Tabellen
+| Modell | NMPJPE | Std | Median | Bewertung |
+|--------|--------|-----|--------|-----------|
+| **MoveNet** | **12.7%** | 5.7% | 9.8% | BESTE WAHL |
+| MediaPipe | 14.4% | 6.1% | 11.2% | Gut, robust |
+| YOLO | 17.0% | 8.4% | 11.2% | Höhere Varianz |
 
-#### Haupt-Ergebnis: NMPJPE vs Rotation
+**Erkenntnis:** MoveNet ist auf sauberen Daten klar am besten (12.7% vs 14.4% vs 17.0%).
+
+---
+
+## Clean Data: Kamera-Vergleich
+
+### Rohdaten (Mean)
+
+| Modell | c17 | c18 | Differenz |
+|--------|-----|-----|-----------|
+| MediaPipe | 15.2% | 13.6% | +1.6% |
+| MoveNet | 14.1% | 11.4% | +2.8% |
+| YOLO | 20.4% | 13.9% | +6.5% |
+
+**Problem:** c17 (frontal) erscheint schlechter als c18 (lateral) - das widerspricht der Erwartung!
+
+### Ursache: Person-Switch Frames
+
+c17 hat **5-18x mehr** Frames mit >100% Fehler (Modell trackt kurzzeitig falsche Person):
+
+| Modell | c17 extreme | c18 extreme | Verhältnis |
+|--------|-------------|-------------|------------|
+| MediaPipe | 1.52% | 0.30% | **4.8x** |
+| MoveNet | 1.57% | 0.11% | **12.8x** |
+| YOLO | 2.62% | 0.13% | **17.8x** |
+
+### Nach Filterung (ohne >100% Frames)
+
+| Modell | c17 (gefiltert) | c18 (gefiltert) | Differenz |
+|--------|-----------------|-----------------|-----------|
+| MediaPipe | 11.8% | 13.1% | **c17 1.3% besser** |
+| MoveNet | 9.6% | 11.2% | **c17 1.6% besser** |
+| YOLO | 11.3% | 13.7% | **c17 2.4% besser** |
+
+**Erkenntnis:** Frontal (c17) ist tatsächlich besser als lateral - wie erwartet. Der schlechtere Mean-Wert kommt durch sporadische Multi-Person-Frames.
+
+### Wichtig: Mehr Multi-Person-Videos als gedacht
+
+Die 5 identifizierten Coach-Videos sind nur die schlimmsten Fälle. Es gibt **~26 weitere Videos** mit sporadischen Multi-Person-Frames, die gelegentliche Tracking-Fehler verursachen. Das Multi-Person-Robustheitsproblem ist pervasiver als ursprünglich angenommen.
+
+---
+
+## Selection-Robustheit: Coach-Impact
+
+**Wie stark verschlechtert sich jedes Modell bei Coach-Interaktion?**
+
+| Modell | Clean | Mit Coach | Anstieg | Selection |
+|--------|-------|-----------|---------|-----------|
+| MediaPipe | 14.4% | 45.4% | **+215%** | Torso-Größe |
+| MoveNet | 12.7% | 62.2% | **+390%** | BBox + Score |
+| YOLO | 17.0% | 66.0% | **+289%** | BBox + Score |
+
+**Kernaussage:** MediaPipe's Torso-Selection ist **~2x robuster** bei Multi-Person-Szenarien als BBox-Selection.
+
+**Warum?** Torso-Größe (Schulter-Hüfte-Abstand) korreliert mit Kamera-Distanz - die nähere Person hat einen größeren Torso im Bild. BBox-Area misst "Ausbreitung" (Armposition), nicht tatsächliche Größe.
+
+---
+
+## Coach-Problem Videos: Detail
+
+| Video | MediaPipe | MoveNet | YOLO | Situation |
+|-------|-----------|---------|------|-----------|
+| PM_010-c17 | 81.9% | 70.7% | 69.9% | Coach interagiert |
+| PM_011-c17 | 38.0% | 59.7% | 66.2% | Coach im Bild |
+| PM_108-c17 | 17.2% | 46.2% | 51.1% | Coach im Bild |
+| PM_119-c17 | 24.1% | 74.0% | 73.0% | Coach im Bild |
+| PM_121-c17 | 30.9% | 60.3% | 75.3% | Coach im Bild |
+
+**Erkenntnisse:**
+- PM_010: Alle versagen - physische Coach-Interaktion
+- PM_108, PM_119: MediaPipe robust (17-24%), MoveNet/YOLO versagen (46-75%)
+- MediaPipe bleibt bei 4/5 Videos unter 40%, MoveNet/YOLO bei 0/5
+
+---
+
+## Dataset-Limitation: Rotationsverteilung
+
+Die ursprünglich geplante Analyse "Wie beeinflusst Körperrotation die Genauigkeit?" konnte nicht durchgeführt werden:
+
+| Rotationsbereich | % der Frames | Beschreibung |
+|------------------|--------------|--------------|
+| 0-30° (frontal) | 41.2% | Hauptsächlich c17 |
+| 30-60° (diagonal) | **17.6%** | Sehr wenig Daten |
+| 60-90° (seitlich) | 41.3% | Hauptsächlich c18 |
+
+**Problem:** Die Daten sind **bimodal**, nicht kontinuierlich. Die Patienten rotieren während der Übungen nicht - sie stehen entweder frontal ODER seitlich. Die "Rotationsanalyse" wird damit effektiv zur "Kamera 1 vs Kamera 2 Analyse".
+
+---
+
+## Übungsbasierte Analyse (c18)
+
+| Exercise | Rotation | MediaPipe | MoveNet | YOLO |
+|----------|----------|-----------|---------|------|
+| Ex1 | 30-50° (schräg) | 12.7% | 10.7% | 11.0% |
+| Ex2 | 30-50° (schräg) | 12.4% | 10.0% | 12.6% |
+| Ex3 | 50-70° (diagonal) | 16.9% | 15.3% | 17.1% |
+| Ex4 | 40-60° (diagonal) | 12.0% | 11.3% | 13.4% |
+| Ex5 | 60-80° (seitlich) | 15.7% | 11.9% | 18.8% |
+| Ex6 | 30-60° (gemischt) | 11.9% | 10.3% | 12.8% |
+
+**Rotations-Effekt (schräg → seitlich):**
+- MoveNet: +1.2% (minimal)
+- MediaPipe: +3.0% (moderat)
+- YOLO: +7.8% (signifikant)
+
+---
+
+## Analyse nach Übung
+
+| Exercise | MediaPipe | MoveNet | YOLO | Anmerkung |
+|----------|-----------|---------|------|-----------|
+| Ex1 | 13.7% | **10.6%** | 15.4% | MoveNet dominiert |
+| Ex2 | 14.8% | **10.9%** | 13.7% | MoveNet dominiert |
+| Ex3 | 17.0% | 17.3% | 20.6% | Alle ähnlich schlecht |
+| Ex4 | 13.6% | 13.9% | 18.5% | YOLO kämpft |
+| Ex5 | 16.3% | **14.2%** | 20.7% | MoveNet am besten |
+| Ex6 | 13.8% | 13.4% | 17.5% | Alle ähnlich |
+
+**Erkenntnis:** MoveNet ist besonders stark bei Ex1, Ex2, Ex5. Ex3 ist für alle Modelle schwierig.
+
+---
+
+## Beste und Schlechteste Videos
+
+### Top 3 (niedrigster Fehler)
+
+| Modell | Video | NMPJPE |
+|--------|-------|--------|
+| MoveNet | PM_033-c17 | 5.0% |
+| MoveNet | PM_003-c17 | 6.3% |
+| MediaPipe | PM_032-c17 | 6.1% |
+| YOLO | PM_016-c18 | 7.3% |
+
+### Bottom 3 Clean (höchster Fehler ohne Coach)
+
+| Modell | Video | NMPJPE | Ursache |
+|--------|-------|--------|---------|
+| MediaPipe | PM_025-c17 | 42.0% | Schwierige Bewegung |
+| MoveNet | PM_044-c17 | 39.3% | Schwierige Bewegung |
+| YOLO | PM_109-c17 | 44.4% | Selection-Instabilität |
+
+---
+
+## Vergleich: Alle Daten vs Clean Data
+
+| Modell | Alle (126) | Clean (121) | Differenz |
+|--------|------------|-------------|-----------|
+| MediaPipe | 15.6% | 14.4% | -1.2% |
+| MoveNet | 14.6% | 12.7% | **-1.9%** |
+| YOLO | 19.0% | 17.0% | **-2.0%** |
+
+**Erkenntnis:** Die 5 Coach-Videos erhöhen den Gesamt-Fehler um 1-2%. Bei MoveNet/YOLO ist der Effekt stärker (wegen BBox-Selection).
+
+---
+
+## Hypothesen-Überprüfung (Final)
+
+| Hypothese | Ergebnis | Details |
+|-----------|----------|---------|
+| H1: NMPJPE steigt mit Rotation | ⚠️ NICHT TESTBAR | Dataset bimodal (41% frontal, 18% mitte, 41% lateral) |
+| H2: MoveNet am genauesten | ✅ BESTÄTIGT | 12.7% auf Clean Data, beste Genauigkeit |
+| H3: Selection-Strategie kritisch | ✅ BESTÄTIGT | Torso-Selection 2x robuster als BBox |
+| H4: c17 hat mehr Tracking-Probleme | ✅ BESTÄTIGT | 5-18x mehr Person-Switch Frames |
+| H5: Multi-Person problematisch | ✅ BESTÄTIGT | +215% bis +390% bei Coach-Videos |
+
+**Rotation-Limitation:** Die ursprüngliche Hypothese über kontinuierliche Rotation (0°→90°) konnte nicht getestet werden. Die Patienten rotieren während der Übungen nicht - sie stehen entweder frontal ODER seitlich.
+
+---
+
+## Empfehlungen für Telehealth-Anwendungen
+
+| Szenario | Empfehlung | NMPJPE |
+|----------|------------|--------|
+| **Single-Person garantiert** | MoveNet MultiPose | 12.7% |
+| **Multi-Person möglich** | MediaPipe | 14.4% (robust) |
+| **Budget-Hardware** | YOLO Nano | 17.0% (schnellste) |
+
+### Warnungen implementieren:
+1. **Multi-Person erkannt:** "Andere Person im Bild. Bitte Kamera neu positionieren."
+2. **Seitliche Ansicht:** "Seitliche Ansicht erkannt. Genauigkeit reduziert um ~20%."
+3. **Low Confidence:** "Unsichere Schätzung. Bitte Bewegung wiederholen."
+
+---
+
+## Daten-Files
 
 ```
-| Winkel | MediaPipe      | MoveNet MP     | YOLO           |
-|--------|----------------|----------------|----------------|
-|        | Mean ± Std     | Mean ± Std     | Mean ± Std     |
-| 0-10°  |                |                |                |
-| 10-20° |                |                |                |
-| 20-30° |                |                |                |
-| 30-40° |                |                |                |
-| 40-50° |                |                |                |
-| 50-60° |                |                |                |
-| 60-70° |                |                |                |
-| 70-80° |                |                |                |
-| 80-90° |                |                |                |
+data/
+├── evaluation_results.csv              # Originale Evaluation
+├── evaluation_results_categorized.csv  # Mit Clean/Coach Kategorie
+├── predictions/Ex1-Ex6/*.npz           # Prediction Files
+└── gt_2d/Ex1-Ex6/*.npy                 # Ground Truth 2D
 ```
 
-#### Per-Joint Fehler
+### Scripts
 
-```
-| Joint          | MediaPipe | MoveNet | YOLO |
-|----------------|-----------|---------|------|
-| Left Shoulder  |           |         |      |
-| Right Shoulder |           |         |      |
-| Left Elbow     |           |         |      |
-| Right Elbow    |           |         |      |
-| Left Wrist     |           |         |      |
-| Right Wrist    |           |         |      |
-| Left Hip       |           |         |      |
-| Right Hip      |           |         |      |
-| Left Knee      |           |         |      |
-| Right Knee     |           |         |      |
-| Left Ankle     |           |         |      |
-| Right Ankle    |           |         |      |
-```
+```bash
+# Evaluation reproduzieren
+.venv/Scripts/python run_evaluation.py
 
-#### Ausreißer-Statistik
+# Videos kategorisieren
+.venv/Scripts/python categorize_videos.py
 
-```
-| Modell    | Failures | Wrong Person | High Error | Valid |
-|-----------|----------|--------------|------------|-------|
-| MediaPipe |          |              |            |       |
-| MoveNet   |          |              |            |       |
-| YOLO      |          |              |            |       |
+# Clean-Data analysieren
+.venv/Scripts/python analyze_clean_data.py
 ```
 
 ---
 
-## Geplante Visualisierungen
+## Changelog
 
-### 1. Hauptgrafik: NMPJPE vs Rotationswinkel
-```
-Y-Achse: NMPJPE (%)
-X-Achse: Rotationswinkel (°)
-3 Linien: MediaPipe, MoveNet, YOLO
-Shaded Area: Konfidenzintervall (±1 Std)
-```
-
-### 2. Per-Joint Heatmap
-```
-Y-Achse: Joints (12)
-X-Achse: Rotationswinkel-Bins (9)
-Farbe: NMPJPE (niedrig=grün, hoch=rot)
-Eine Heatmap pro Modell
-```
-
-### 3. Boxplots pro Winkel-Bin
-```
-X-Achse: Winkel-Bins
-Y-Achse: NMPJPE
-3 Boxplots pro Bin (einer pro Modell)
-```
-
-### 4. Beispielbilder
-```
-Qualitative Vergleiche bei:
-- 0° (frontal)
-- 45° (diagonal)
-- 90° (seitlich)
-
-Zeigt: GT Skeleton, MediaPipe, MoveNet, YOLO
-```
-
----
-
-## Statistische Analyse (Geplant)
-
-### Tests
-1. **Shapiro-Wilk:** Normalverteilung prüfen
-2. **Levene:** Varianz-Homogenität
-3. **ANOVA:** Unterschied zwischen Modellen pro Bin
-4. **Tukey HSD:** Post-hoc paarweise Vergleiche
-5. **Regression:** Modellierung des Fehleranstiegs
-
-### Signifikanz-Niveau
-α = 0.05
-
-### Effektstärke
-Cohen's d für paarweise Vergleiche
-
----
-
-## Interpretation (Geplant)
-
-### Fragen zu beantworten
-1. **Welches Modell ist am robustesten bei Rotation?**
-2. **Ab welchem Winkel wird welches Modell unzuverlässig?**
-3. **Welche Joints sind am anfälligsten?**
-4. **Gibt es einen kritischen Winkel θ_crit?**
-
-### Hypothesen-Überprüfung
-- H1: NMPJPE steigt mit Rotation → ?
-- H2: Nicht-linearer Anstieg ab ~45° → ?
-- H3: Extremitäten > Torso Fehler → ?
-- H4: Architektur-Unterschiede → ?
-- H5: Kritischer Winkel existiert → ?
-
----
-
-## Rohdaten-Speicherort
-
-```
-data/predictions/
-├── Ex1/
-│   ├── PM_000-c17.npz
-│   │   ├── pred_MediaPipe_heavy
-│   │   ├── pred_MoveNet_multipose
-│   │   ├── pred_YOLOv8-Pose_n
-│   │   ├── rotation_angles
-│   │   └── num_frames
-│   └── ...
-├── Ex2/
-└── ...
-```
-
-### Laden der Ergebnisse
-```python
-import numpy as np
-
-data = np.load('data/predictions/Ex1/PM_000-c17.npz')
-mediapipe_pred = data['pred_MediaPipe_heavy']
-movenet_pred = data['pred_MoveNet_multipose']
-yolo_pred = data['pred_YOLOv8-Pose_n']
-angles = data['rotation_angles']
-```
+| Datum | Änderung |
+|-------|----------|
+| 09.01 | **Kamera-Analyse korrigiert**: c17 hat 5-18x mehr Person-Switch Frames |
+| 09.01 | Nach Filterung: c17 (frontal) 1-2% besser als c18 (lateral) |
+| 09.01 | ~26 weitere Videos mit sporadischen Multi-Person-Frames identifiziert |
+| 09.01 | Rotation-Hypothese als "nicht testbar" markiert (bimodale Daten) |
+| 09.01 | **Video-Kategorisierung abgeschlossen** |
+| 09.01 | Clean-Data Analyse: MoveNet 12.7%, MediaPipe 14.4%, YOLO 17.0% |
+| 09.01 | Selection-Robustheit quantifiziert: MediaPipe 2x robuster |
+| 09.01 | Komplett überarbeitet mit korrigierten Zahlen |

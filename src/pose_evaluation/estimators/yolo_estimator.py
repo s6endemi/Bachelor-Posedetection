@@ -72,7 +72,8 @@ class YOLOPoseEstimator(PoseEstimator):
                 for name in self.COCO_KEYPOINTS
             ]
 
-        # Bei mehreren Personen: waehle die groesste (basierend auf Bounding Box Area)
+        # Bei mehreren Personen: waehle die groesste MIT ausreichender Confidence
+        # Score-Filter verhindert Auswahl von teilweise sichtbaren Personen (z.B. Coach)
         num_persons = len(keypoints_data.xy)
         if num_persons > 1 and results[0].boxes is not None:
             best_idx = 0
@@ -81,7 +82,9 @@ class YOLOPoseEstimator(PoseEstimator):
             for i in range(min(num_persons, len(boxes))):
                 box = boxes.xyxy[i].cpu().numpy()
                 area = (box[2] - box[0]) * (box[3] - box[1])
-                if area > best_area:
+                # Score-Filter: ignoriere Detections mit niedriger Confidence
+                score = float(boxes.conf[i].cpu().numpy()) if boxes.conf is not None else 1.0
+                if score > 0.3 and area > best_area:
                     best_area = area
                     best_idx = i
             person_idx = best_idx

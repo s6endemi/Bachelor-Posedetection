@@ -1,0 +1,340 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{booktabs}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{titlesec}
+
+\titleformat{\section}{\large\bfseries}{\thesection}{1em}{}
+\titleformat{\subsection}{\normalsize\bfseries}{\thesubsection}{1em}{}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.5em}
+
+\title{\textbf{Thesis Status Report}\\[0.3em]\large Pose Estimation for Rehabilitation Applications}
+\author{}
+\date{January 2026}
+
+\begin{document}
+\maketitle
+
+\section*{Executive Summary}
+
+This report summarizes the current state of my bachelor thesis: evaluating pose estimation models for rehabilitation applications. I tested three models (MediaPipe, MoveNet, YOLOv8-Pose) on the REHAB24-6 clinical dataset (126 videos, 120,000 frames).
+
+\textbf{Key Results:}
+\begin{itemize}[nosep]
+    \item MoveNet achieves best accuracy (12.7\% error)
+    \item MediaPipe is most robust in multi-person scenarios (2x better than others)
+    \item Original rotation hypothesis could not be tested due to dataset structure
+\end{itemize}
+
+%--------------------------------------------------
+\section{Background \& Goal}
+%--------------------------------------------------
+
+\textbf{Context:} Smartphone-based physiotherapy guidance requires accurate pose estimation. The goal was to find which model works best for this use case and how factors like camera angle affect accuracy.
+
+\textbf{Original Plan:}
+\begin{enumerate}[nosep]
+    \item Compare pose estimation models on clinical rehabilitation data
+    \item Analyze how body rotation (frontal $\rightarrow$ lateral) affects accuracy
+    \item Provide practical recommendations for telehealth applications
+\end{enumerate}
+
+\textbf{Why 2D Pose Estimation (not 3D)?}
+\begin{itemize}[nosep]
+    \item MoveNet and YOLO only provide 2D outputs
+    \item MediaPipe's 3D estimation has known depth accuracy issues
+    \item The REHAB24-6 paper itself states: ``Depth estimation is the main limitation''
+    \item Many rehab applications only need 2D joint angles (elbow flexion, knee extension)
+\end{itemize}
+
+%--------------------------------------------------
+\section{Dataset: REHAB24-6}
+%--------------------------------------------------
+
+\begin{table}[h]
+\centering
+\begin{tabular}{@{}ll@{}}
+\toprule
+Property & Value \\
+\midrule
+Videos & 126 (21 patients $\times$ 6 exercises) \\
+Cameras & 2 (c17: frontal, c18: lateral) \\
+Total Frames & $\sim$370,000 (evaluated: 120,000) \\
+Ground Truth & Motion Capture (optical markers) \\
+Exercises & 6 different physiotherapy movements \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Why this dataset?} It's one of the few publicly available datasets with:
+\begin{itemize}[nosep]
+    \item Real clinical physiotherapy data (not actors)
+    \item Multiple camera angles
+    \item High-quality motion capture ground truth
+\end{itemize}
+
+%--------------------------------------------------
+\section{Models Tested}
+%--------------------------------------------------
+
+\begin{table}[h]
+\centering
+\begin{tabular}{@{}llll@{}}
+\toprule
+Model & Developer & Keypoints & Person Selection \\
+\midrule
+MediaPipe Pose & Google & 33 & Torso size \\
+MoveNet MultiPose & Google/TensorFlow & 17 & Bounding box area \\
+YOLOv8-Pose Nano & Ultralytics & 17 & Bounding box area \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+All models are optimized for mobile/real-time use. I used the lightweight variants to match the telehealth use case.
+
+\textbf{Evaluation Metric: NMPJPE}\\
+Normalized Mean Per Joint Position Error = average joint error as \% of torso length.
+\begin{itemize}[nosep]
+    \item 10\% error $\approx$ 5cm deviation per joint (torso $\approx$ 50cm)
+    \item 15\% error $\approx$ 7.5cm deviation per joint
+    \item Standard metric in pose estimation literature
+\end{itemize}
+
+%--------------------------------------------------
+\section{Main Results}
+%--------------------------------------------------
+
+\subsection{Model Accuracy (clean data, n=121 videos)}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{@{}lccc@{}}
+\toprule
+Model & NMPJPE & Std Dev & Median \\
+\midrule
+MoveNet & \textbf{12.7\%} & 5.7\% & 9.8\% \\
+MediaPipe & 14.4\% & 6.1\% & 11.2\% \\
+YOLO & 17.0\% & 8.4\% & 11.2\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+All differences statistically significant ($p < 0.001$, ANOVA), but effect sizes are small (Cohen's $d < 0.15$).
+
+\subsection{Camera Perspective Effect (c17 frontal vs c18 lateral)}
+
+\textbf{Raw results (all clean data):}
+\begin{table}[h]
+\centering
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+Model & c17 Mean & c18 Mean & c17 Median & c18 Median \\
+\midrule
+MediaPipe & 15.2\% & 13.6\% & 10.8\% & 11.7\% \\
+MoveNet & 14.1\% & 11.4\% & 9.2\% & 10.4\% \\
+YOLO & 20.4\% & 13.9\% & 10.5\% & 11.8\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Critical discovery:} c17 has 5-18x more ``person-switch'' frames ($>$100\% error):
+
+\begin{table}[h]
+\centering
+\begin{tabular}{@{}lccc@{}}
+\toprule
+Model & c17 extreme frames & c18 extreme frames & Ratio \\
+\midrule
+MediaPipe & 1.52\% & 0.30\% & 4.8x \\
+MoveNet & 1.57\% & 0.11\% & 12.8x \\
+YOLO & 2.62\% & 0.13\% & 17.8x \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{After filtering extreme frames ($>$100\%):}
+\begin{table}[h]
+\centering
+\begin{tabular}{@{}lccc@{}}
+\toprule
+Model & c17 (filtered) & c18 (filtered) & Difference \\
+\midrule
+MediaPipe & 11.8\% & 13.1\% & \textbf{c17 1.3\% better} \\
+MoveNet & 9.6\% & 11.2\% & \textbf{c17 1.6\% better} \\
+YOLO & 11.3\% & 13.7\% & \textbf{c17 2.4\% better} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Interpretation:} Frontal view (c17) is actually better for typical frames, as expected. However, c17 has significantly more frames where the model briefly tracks the wrong person. The 5 identified coach videos were only the worst cases -- there are $\sim$26 additional videos with sporadic multi-person frames that weren't flagged.
+
+\subsection{Selection Robustness (Critical Finding)}
+
+In 5 videos, a physiotherapist/coach entered the frame. This revealed major differences:
+
+\begin{table}[h]
+\centering
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+Model & Clean & With Coach & Increase & Selection Method \\
+\midrule
+MediaPipe & 14.4\% & 45.4\% & +215\% & Torso size \\
+MoveNet & 12.7\% & 62.2\% & +390\% & Bounding box \\
+YOLO & 17.0\% & 66.0\% & +289\% & Bounding box \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Key Insight:} MediaPipe's torso-based selection is $\sim$2x more robust than bounding-box selection.
+
+\textbf{Why?} Torso size (shoulder-to-hip distance) correlates with camera distance -- the closer person has a larger torso in the image. Bounding box area measures ``spread'' (arm position), not actual size, so a person with stretched arms can appear ``larger'' even if further away.
+
+%--------------------------------------------------
+\section{Dataset Limitation: Rotation Problem}
+%--------------------------------------------------
+
+\textbf{Original Hypothesis:} Body rotation (0° frontal to 90° lateral) significantly affects pose estimation accuracy.
+
+\textbf{What I Found:} The dataset doesn't support this analysis.
+
+\begin{table}[h]
+\centering
+\begin{tabular}{@{}lcc@{}}
+\toprule
+Rotation Range & \% of Frames & Source \\
+\midrule
+0--30° (frontal) & 41.2\% & Mostly camera c17 \\
+30--60° (diagonal) & \textbf{17.6\%} & Very sparse \\
+60--90° (lateral) & 41.3\% & Mostly camera c18 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Problem:} The rotation distribution is \textit{bimodal}, not continuous. Patients either face the camera OR stand sideways -- they don't rotate during exercises. Only 17.6\% of frames are in the ``interesting'' middle range.
+
+\textbf{Consequence:} ``Rotation effect analysis'' is essentially just ``camera 1 vs camera 2 comparison.'' The original research question cannot be properly answered with this dataset.
+
+%--------------------------------------------------
+\section{Technical Work Done}
+%--------------------------------------------------
+
+\subsection{Implementation}
+\begin{itemize}[nosep]
+    \item Complete inference pipeline for all 3 models
+    \item Keypoint format mapping (33/17/26 keypoints $\rightarrow$ 12 comparable joints)
+    \item Model-specific person selection strategies
+    \item Rotation angle calculation from 3D motion capture data
+    \item Camera coordinate transformation (MoCap $\rightarrow$ camera-relative)
+\end{itemize}
+
+\subsection{Problems Discovered \& Solved}
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{@{}p{3.5cm}p{4cm}p{4cm}@{}}
+\toprule
+Problem & Root Cause & Solution \\
+\midrule
+MediaPipe: 29\% detection failures & Default confidence threshold (0.5) too strict & Lowered to 0.1 \\
+Models tracking wrong person & No multi-person handling implemented & Developed selection strategies \\
+MoveNet: can't select person & SinglePose architecture outputs only 1 person & Switched to MultiPose variant \\
+Rotation angles don't match video & MoCap coordinates $\neq$ camera coordinates & Empirical offset transformation \\
+Evaluation numbers were wrong & Frame alignment bug (frame\_step=3) & Rewrote evaluation script \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Meta-Insight:} Each problem initially appeared to be a model weakness but turned out to be an implementation/methodology issue. Documenting these is important for reproducibility.
+
+\subsection{Artifacts Created}
+\begin{itemize}[nosep]
+    \item 126 prediction files (.npz format)
+    \item Frame-level evaluation data (120,000 rows)
+    \item Statistical analysis (ANOVA, pairwise t-tests, effect sizes)
+    \item 7 publication-ready figures (PNG + PDF)
+    \item Complete documentation (methodology, problems, results)
+\end{itemize}
+
+%--------------------------------------------------
+\section{Comparison to REHAB24-6 Paper}
+%--------------------------------------------------
+
+The original REHAB24-6 paper (Cernek et al., 2025) also evaluated pose estimation. Key differences:
+
+\begin{table}[h]
+\centering
+\begin{tabular}{@{}lll@{}}
+\toprule
+Aspect & Their Work & My Work \\
+\midrule
+Models & MediaPipe, YOLO, ViTPose & MediaPipe, MoveNet, YOLO \\
+MoveNet & Not evaluated & \textbf{Evaluated} \\
+Focus & 3D estimation, fine-tuning & 2D estimation, selection strategies \\
+Person selection & Mentioned as issue & \textbf{Quantified robustness} \\
+Selection strategies & Not compared & \textbf{Torso vs BBox compared} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Potential Novel Contribution:} Quantifying person selection robustness appears to be new. The paper mentions person detection as a challenge (Section 4.2.2) but doesn't systematically compare selection approaches.
+
+%--------------------------------------------------
+\section{Where I Need Guidance}
+%--------------------------------------------------
+
+\subsection{Current Situation}
+
+The implementation, data processing, and evaluation are complete. The rotation analysis didn't work as originally planned due to the dataset's bimodal structure -- but this is a dataset characteristic, not a methodological failure.
+
+I now have:
+\begin{itemize}[nosep]
+    \item A working model comparison (MoveNet, MediaPipe, YOLO)
+    \item Statistical analysis with significant results
+    \item An unexpected finding about selection robustness
+    \item Complete documentation and visualizations
+\end{itemize}
+
+What I'm missing is a clear direction for framing this as a coherent thesis contribution.
+
+\subsection{Possible Directions}
+
+From what I have, I could potentially focus on:
+
+\begin{enumerate}[nosep]
+    \item \textbf{Model comparison:} Practical benchmark for telehealth (including MoveNet, which wasn't in the original paper)
+    \item \textbf{Selection strategies:} The torso vs bounding-box finding -- though I'm unsure if n=5 coach videos is enough to make strong claims
+    \item \textbf{Dataset analysis:} Why rotation analysis failed and what this means for future research
+    \item \textbf{Combination:} Some mix of the above
+    \item \textbf{Extension:} Additional experiments if needed (more models, synthetic data, different dataset)
+\end{enumerate}
+
+I'm honestly not sure which of these has enough academic merit for a bachelor thesis, or whether I should extend the work in some direction.
+
+\subsection{Questions}
+
+\begin{enumerate}[nosep]
+    \item What do you see as the most viable path forward from here?
+    \item Is any of the existing findings substantial enough, or should I extend the work?
+    \item Are there specific aspects I should focus on or drop entirely?
+    \item Any related work you'd recommend looking at?
+\end{enumerate}
+
+%--------------------------------------------------
+\section*{Summary: Key Numbers}
+%--------------------------------------------------
+
+\begin{verbatim}
+Dataset:           126 videos, 120k frames, 12 comparable joints
+Best Accuracy:     MoveNet (12.7% NMPJPE)
+Most Robust:       MediaPipe (2x better at multi-person)
+Camera Effect:     +1.6% to +6.5% (statistically significant, practically small)
+Rotation Data:     Bimodal - 41% frontal, 18% middle, 41% lateral
+Coach Videos:      5 of 126 (4%)
+\end{verbatim}
+
+\end{document}

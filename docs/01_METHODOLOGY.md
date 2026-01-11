@@ -252,38 +252,82 @@ Für die Thesis werden alle Ausreißer dokumentiert:
 
 ## 6. Modell-Konfigurationen
 
+### Kontext: Mobile-optimierte Modelle
+
+Im Kontext smartphone-basierter Bewegungsanalyse wurden die fuer mobile Geraete
+optimierten Modellvarianten gewaehlt. Der Fokus liegt auf der **relativen
+Degradation** bei Rotation, nicht auf absoluten Genauigkeitswerten.
+
+| Modell | Variante | Begruendung |
+|--------|----------|-------------|
+| MediaPipe | Full (1) | Alle Varianten mobile-optimiert, guter Kompromiss |
+| MoveNet | MultiPose Lightning | Einzige MultiPose-Option |
+| YOLO | Nano (n) | Mobile-optimiert (vs Medium/Large fuer Server) |
+
 ### MediaPipe
 ```python
 MediaPipeEstimator(
-    model_complexity=2,           # Heavy (beste Genauigkeit)
+    model_complexity=1,           # Full (Balance Genauigkeit/Speed)
     min_detection_confidence=0.1  # Niedrig (robust)
 )
 ```
 - **num_poses=5:** Erlaubt Multi-Person Detection
-- **Selection:** Torso-Größe
+- **Selection:** Torso-Groesse
+- **Hinweis:** Alle MediaPipe-Varianten (Lite/Full/Heavy) sind on-device optimiert
 
 ### MoveNet MultiPose
 ```python
 MoveNetMultiPoseEstimator()
 # Model: tfhub.dev/google/movenet/multipose/lightning/1
 # Input: 256x256
-# Output: 6 Personen × (17 Keypoints × 3 + BBox)
+# Output: 6 Personen x (17 Keypoints x 3 + BBox)
 ```
 - **Selection:** BBox Area
 - **Threshold:** score > 0.1
+- **Hinweis:** Thunder existiert nur fuer SinglePose
 
 ### YOLOv8-Pose
 ```python
-YOLOPoseEstimator(model_size="n")  # oder "m" für Full-Run
-# Model: yolov8n-pose.pt / yolov8m-pose.pt
+YOLOPoseEstimator(model_size="n")  # Nano fuer Mobile
+# Model: yolov8n-pose.pt
 # Input: 640x640 (automatisch skaliert)
 ```
 - **Selection:** BBox Area
-- **Verfügbare Größen:** n, s, m, l, x
+- **Verfuegbare Groessen:** n (Mobile), s, m, l, x (Server)
 
 ---
 
-## 7. Pipeline-Ablauf
+## 7. Frame-Sampling
+
+### Motivation
+
+Bei 30fps Videoaufnahmen sind aufeinanderfolgende Frames hochkorreliert (r > 0.99).
+Die Verarbeitung jedes Frames ist daher:
+1. **Redundant:** Kaum neue Information zwischen Frame N und N+1
+2. **Rechenintensiv:** 126 Videos x ~4000 Frames = ~500.000 Inferenzen
+3. **Statistisch ineffizient:** Pseudo-Replikation bei der Analyse
+
+### Loesung: Frame-Stepping
+
+```python
+# Nur jeden 3. Frame verarbeiten
+pipeline.run(frame_step=3)
+```
+
+| Parameter | Wert | Effekt |
+|-----------|------|--------|
+| `frame_step=1` | Alle Frames | ~500.000 Frames, ~15h |
+| `frame_step=3` | Jeder 3. Frame | ~167.000 Frames, ~5h |
+
+### Wissenschaftliche Begruendung
+
+1. **Abtastrate:** 10Hz (30fps / 3) ist ausreichend fuer Rehabilitations-Uebungen
+2. **Autokorrelation:** Frame-Stepping reduziert die Korrelation zwischen Samples
+3. **Statistik:** Weniger, aber unabhaengigere Datenpunkte sind besser als viele korrelierte
+
+---
+
+## 8. Pipeline-Ablauf
 
 ```
 1. Video laden
@@ -307,10 +351,12 @@ YOLOPoseEstimator(model_size="n")  # oder "m" für Full-Run
 ### Output-Format (.npz)
 ```python
 {
-    'pred_MediaPipe_heavy': (N, 17, 2),      # Predictions
-    'pred_MoveNet_multipose': (N, 17, 2),
-    'pred_YOLOv8-Pose_n': (N, 17, 2),
-    'rotation_angles': (N,),                  # Winkel pro Frame
+    'pred_MediaPipe_full': (N, 17, 3),       # Predictions (x, y, confidence)
+    'pred_MoveNet_multipose': (N, 17, 3),
+    'pred_YOLOv8-Pose_n': (N, 17, 3),
+    'rotation_angles': (N,),                  # Kamera-relativer Winkel pro Frame
     'num_frames': int
 }
 ```
+
+**Hinweis:** Bei `frame_step=3` enthaelt N nur jeden 3. Frame des Videos.

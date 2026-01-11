@@ -12,7 +12,24 @@
       "Bash(ls:*)",
       "Bash(python run_inference.py:*)",
       "Bash(dir:*)",
-      "Bash(findstr:*)"
+      "Bash(findstr:*)",
+      "Bash(python -c:*)",
+      "Bash(powershell -Command \"\\(Get-ChildItem ''C:\\\\Users\\\\Eren\\\\bachelor\\\\data\\\\predictions\\\\Ex*\\\\*.npz'' -Recurse\\).Count\")",
+      "Bash(powershell -Command \"Get-Content ''C:\\\\Users\\\\Eren\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\C--Users-Eren-bachelor\\\\tasks\\\\be90e5e.output'' -Tail 5\")",
+      "Bash(powershell:*)",
+      "Bash(.venvScriptspython test_yolo_fix.py)",
+      "Bash(C:/Users/Eren/bachelor/.venv/Scripts/python.exe C:/Users/Eren/bachelor/test_yolo_fix.py)",
+      "Bash(C:/Users/Eren/bachelor/.venv/Scripts/python.exe test_yolo_fix.py)",
+      "Bash(C:/Users/Eren/bachelor/.venv/Scripts/python.exe -c:*)",
+      "Bash(C:/Users/Eren/bachelor/.venv/Scripts/python.exe:*)",
+      "Bash(.venvScriptspython categorize_videos.py)",
+      "Bash(.venv/Scripts/python.exe categorize_videos.py)",
+      "Bash(.venv/Scripts/python.exe:*)",
+      "Bash(.venvScriptspython analysiscreate_visualizations.py)",
+      "Bash(C:UsersErenbachelor.venvScriptspython.exe C:UsersErenbacheloranalysiscreate_visualizations.py)",
+      "Bash(wc:*)",
+      "Bash(where:*)",
+      "Bash(pdflatex:*)"
     ]
   }
 }
