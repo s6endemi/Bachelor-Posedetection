@@ -496,11 +496,11 @@ Ex6 & 11.3\% & 10.2\% & 11.6\% & Leicht \\
 \subsection{Zentrale Erkenntnisse}
 
 \begin{enumerate}[nosep]
-    \item \textbf{Modell-Ranking:} MediaPipe $\approx$ MoveNet $>$ YOLO (Accuracy-Unterschied \textbf{nicht signifikant}, $p=0.098$)
-    \item \textbf{Rotation:} MediaPipe am robustesten (+31\% vs +54\% bei MoveNet)
-    \item \textbf{Selection:} MediaPipe's Torso-Selection ist 2x robuster als BBox-Selection
-    \item \textbf{Jitter:} MoveNet am stabilsten (1.06\% vs 1.51\% bei MediaPipe)
-    \item \textbf{Trade-off:} Kein Modell dominiert -- Wahl hängt vom Anwendungsszenario ab
+    \item \textbf{Modell-Ranking:} MoveNet $\approx$ MediaPipe $>$ YOLO (bereinigt: 11.5\% vs 12.5\% vs 12.9\%)
+    \item \textbf{Ausreißer dominieren:} Die Mean-Unterschiede kommen fast ausschließlich von Person-Switch-Events
+    \item \textbf{c17-Problem:} Die frontale Kamera hat 10x mehr Multi-Person-Probleme
+    \item \textbf{Selection-Strategie kritisch:} Torso-Selection (MediaPipe) ist 2x robuster als BBox-Selection
+    \item \textbf{Rotationseffekt messbar:} +27--39\% Fehler bei seitlicher vs schräger Ansicht
 \end{enumerate}
 
 \subsection{Empfehlungen für Anwendungen}
@@ -511,13 +511,11 @@ Ex6 & 11.3\% & 10.2\% & 11.6\% & Leicht \\
 \toprule
 Szenario & Empfehlung & Begründung \\
 \midrule
-\rowcolor{bestcolor}
-\textbf{Home-Based Reha} & \textbf{MediaPipe} & Robuster bei Rotation und Multi-Person \\
-Kontrollierte Umgebung & MoveNet & Minimal bessere Accuracy, weniger Jitter \\
-Ressourcen-limitiert & YOLO Nano & Schnellste Inferenz, beste Detection-Rate \\
+Single-Person garantiert & MoveNet & Beste Genauigkeit (10.4\% Median) \\
+Multi-Person möglich & MediaPipe & 2x robustere Selection \\
+Ressourcen-limitiert & YOLO Nano & Schnellste Inferenz \\
 \bottomrule
 \end{tabular}
-\caption{Für realistische Home-Szenarien (Previa Health) ist MediaPipe die bessere Wahl.}
 \end{table}
 
 \subsection{Implementierungshinweise}
@@ -526,88 +524,7 @@ Ressourcen-limitiert & YOLO Nano & Schnellste Inferenz, beste Detection-Rate \\
     \item \textbf{Multi-Person-Warnung:} App sollte warnen wenn $>$1 Person erkannt
     \item \textbf{Seitliche Ansicht:} Fehler steigt um $\sim$30\%, User zur Neupositionierung auffordern
     \item \textbf{Extreme-Frame-Detection:} NMPJPE $>$100\% automatisch als ungültig markieren
-    \item \textbf{Quality-Filter:} Frames mit $<$12 erkannten Joints als low-confidence markieren
-    \item \textbf{Temporal Smoothing:} Für MediaPipe Moving-Average über 3--5 Frames anwenden
 \end{itemize}
-
-%==============================================================================
-\section{Temporal Stability (Jitter)}
-%==============================================================================
-
-\textbf{Temporal Jitter} misst die Frame-zu-Frame-Stabilität der Predictions. Niedrigerer Jitter = stabilere, gleichmäßigere Vorhersagen.
-
-\begin{table}[H]
-\centering
-\begin{tabular}{@{}lccccc@{}}
-\toprule
-Modell & Mean Jitter & Median Jitter & P90 & P95 & N Transitions \\
-\midrule
-\rowcolor{bestcolor}
-\textbf{MoveNet} & \textbf{1.06\%} & \textbf{0.42\%} & 1.99\% & 3.50\% & 117.043 \\
-YOLO & 1.12\% & 0.38\% & 2.12\% & 3.91\% & 113.301 \\
-MediaPipe & 1.51\% & 0.53\% & 2.48\% & 5.19\% & 117.091 \\
-\bottomrule
-\end{tabular}
-\caption{Temporal Jitter. MoveNet liefert die stabilsten Predictions, MediaPipe die unruhigsten.}
-\end{table}
-
-\subsection{Jitter nach Kamera}
-
-\begin{table}[H]
-\centering
-\begin{tabular}{@{}lccc@{}}
-\toprule
-Kamera & MediaPipe & MoveNet & YOLO \\
-\midrule
-c17 (frontal) & 1.65\% & \textbf{0.88\%} & \textbf{0.74\%} \\
-c18 (lateral) & 1.39\% & 1.24\% & 1.45\% \\
-\bottomrule
-\end{tabular}
-\caption{Jitter nach Kamera. Alle Modelle sind stabiler bei frontaler Ansicht.}
-\end{table}
-
-%==============================================================================
-\section{Detection Quality (Valid Joints)}
-%==============================================================================
-
-\subsection{Frames mit vollständiger Detection}
-
-\begin{table}[H]
-\centering
-\begin{tabular}{@{}lcccc@{}}
-\toprule
-Modell & Frames mit 12 Joints & Rate & Mean Error (12) & Mean Error (<12) \\
-\midrule
-MediaPipe & 74.978 & 64.0\% & 11.2\% & 15.0\% (+34\%) \\
-MoveNet & 92.769 & 79.2\% & 10.9\% & 13.8\% (+27\%) \\
-\rowcolor{bestcolor}
-\textbf{YOLO} & 99.638 & \textbf{87.8\%} & 12.7\% & 14.6\% (+15\%) \\
-\bottomrule
-\end{tabular}
-\caption{Detection-Vollständigkeit. YOLO erkennt am häufigsten alle 12 Joints.}
-\end{table}
-
-\textbf{Praktische Implikation:} Frames mit $<$12 erkannten Joints haben 15--34\% höheren Fehler. Ein Quality-Filter könnte solche Frames verwerfen.
-
-\subsection{Joint Detection Rate}
-
-\begin{table}[H]
-\centering
-\begin{tabular}{@{}lccc@{}}
-\toprule
-Gelenk & MediaPipe & MoveNet & YOLO \\
-\midrule
-Schultern & 100.0\% & 99.7\% & 99.5\% \\
-Hüften & 100.0\% & 99.6\% & 99.6\% \\
-Knie & 86--98\% & 99.1\% & 99.0\% \\
-\rowcolor{worstcolor}
-\textbf{Rechter Ellbogen} & \textbf{75.3\%} & 92.6\% & 87.8\% \\
-\rowcolor{worstcolor}
-\textbf{Rechtes Handgelenk} & \textbf{77.0\%} & 89.4\% & 90.3\% \\
-\bottomrule
-\end{tabular}
-\caption{Joint Detection Rate. MediaPipe hat Schwierigkeiten mit rechts-seitigen Gelenken.}
-\end{table}
 
 %==============================================================================
 \section{Limitationen}

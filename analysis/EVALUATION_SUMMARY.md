@@ -1,6 +1,6 @@
 # Pose Estimation Evaluation - Vollständige Ergebnisübersicht
 
-> **Letzte Aktualisierung:** 11. Januar 2026
+> **Letzte Aktualisierung:** 13. Januar 2026
 > **Status:** Analyse abgeschlossen
 > **Datengrundlage:** 363.529 Frames aus 126 Videos
 
@@ -12,10 +12,11 @@ Diese Evaluation vergleicht drei Pose-Estimation-Modelle (MediaPipe, MoveNet, YO
 
 | Erkenntnis | Details |
 |------------|---------|
-| **Beste Genauigkeit** | MoveNet (11.5% NMPJPE bereinigt) |
-| **Robusteste Selection** | MediaPipe (2x besser bei Multi-Person) |
-| **Rotationseffekt** | +27-38% Fehleranstieg bei seitlicher Ansicht |
-| **Hauptproblem** | c17-Kamera hat 10x mehr Person-Switch-Frames |
+| **Accuracy** | MediaPipe ≈ MoveNet (statistisch nicht unterscheidbar, p=0.098) |
+| **Rotation Robustheit** | MediaPipe am besten (+31% vs +54% bei MoveNet) |
+| **Selection Robustheit** | MediaPipe 2x besser bei Multi-Person (+209% vs +340%) |
+| **Temporal Stability** | MoveNet am stabilsten (1.06% vs 1.51% Jitter) |
+| **Empfehlung Home-Reha** | **MediaPipe** - robuster bei suboptimalen Bedingungen |
 
 ---
 
@@ -319,20 +320,33 @@ Prediction[i] entspricht Video-Frame[i * 3]
 
 ## 11. Empfehlungen für Anwendungen
 
-### 11.1 Modellwahl
+### 11.1 Zentrale Erkenntnis
+
+**MediaPipe und MoveNet sind in der Genauigkeit statistisch nicht unterscheidbar (p=0.098).** Die Modellwahl hängt vom Anwendungsszenario ab:
+
+| Dimension | Gewinner | Margin |
+|-----------|----------|--------|
+| Accuracy | ≈ gleich | 0.8% (nicht signifikant) |
+| Rotation Robustheit | **MediaPipe** | ~50% stabiler |
+| Selection Robustheit | **MediaPipe** | ~40% besser |
+| Temporal Jitter | MoveNet | 42% weniger |
+| Detection Rate | YOLO | 24% mehr |
+
+### 11.2 Modellwahl
 
 | Szenario | Empfehlung | Begründung |
 |----------|------------|------------|
-| Single-Person garantiert | MoveNet | Beste Genauigkeit (10.4% Median) |
-| Multi-Person möglich | MediaPipe | 2x robustere Selection |
-| Ressourcen-limitiert | YOLO Nano | Schnellste Inferenz |
+| **Home-Based Rehabilitation** | **MediaPipe** | Robuster bei Rotation (+31% vs +54%) und Multi-Person (+209% vs +340%) |
+| Kontrollierte Umgebung | MoveNet | Minimal bessere Accuracy, stabilere Predictions |
+| Ressourcen-limitiert | YOLO Nano | Schnellste Inferenz, beste Detection-Rate |
 
-### 11.2 Implementierungshinweise
+### 11.3 Implementierungshinweise
 
 1. **Multi-Person-Warnung:** App sollte warnen wenn >1 Person erkannt
-2. **Seitliche Ansicht:** Fehler steigt um ~30%, User zur Neupositionierung auffordern
-3. **Confidence-Filter:** Niedrige Joint-Confidence → Frame verwerfen
+2. **Seitliche Ansicht:** Fehler steigt um ~30%, User zur Neupositionierung auffordern (>70°)
+3. **Quality-Filter:** Frames mit <12 erkannten Joints als low-confidence markieren
 4. **Extreme-Frame-Detection:** NMPJPE >100% → automatisch als ungültig markieren
+5. **Temporal Smoothing:** Bei MediaPipe Moving-Average über 3-5 Frames anwenden
 
 ---
 

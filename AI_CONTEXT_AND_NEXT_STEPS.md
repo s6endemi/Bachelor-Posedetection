@@ -774,17 +774,63 @@ Nach dem Literaturvergleich:
 | Metrik | Wert |
 |--------|------|
 | Beste Genauigkeit | MoveNet 10.4% Median |
-| Selection-Robustheit | MediaPipe 2x besser |
-| Rotationseffekt | +30-40% bei 60-90° |
+| Selection-Robustheit | MediaPipe 2x besser (+209% vs +340%) |
+| Rotationseffekt | +27-39% bei 70-90° |
 | Person-Switch-Problem | c17 hat 10x mehr als c18 |
+| **Temporal Stability** | **MoveNet 1.06% Jitter (42% besser als MediaPipe)** |
+| **Detection Rate** | **YOLO 87.8% vollstaendig (vs MediaPipe 64%)** |
+| **Joint-Flip bei Multi-Person** | **MediaPipe +150%, YOLO -85%** |
 
 ### Empfehlungen fuer Previa Health
 
-| Szenario | Empfehlung |
-|----------|------------|
-| Single-Person garantiert | MoveNet |
-| Multi-Person moeglich | MediaPipe |
-| Seitliche Ansicht (>60°) | Warnung ausgeben |
+| Szenario | Empfehlung | Begruendung |
+|----------|------------|-------------|
+| **Realistische Home-Umgebung** | **MediaPipe** | Robuster bei Rotation (+31% vs +54%) und Multi-Person (+209% vs +340%) |
+| Kontrollierte Umgebung (Labor) | MoveNet | Minimal bessere Accuracy (nicht signifikant), weniger Jitter |
+| Seitliche Ansicht (>70°) | Warnung ausgeben | Alle Modelle werden instabil |
+| Quality-Filter | valid_joints < 12 | Frames als low-confidence markieren |
+
+**Wichtig:** MediaPipe und MoveNet sind in der Genauigkeit statistisch NICHT unterscheidbar (p=0.098). MediaPipe ist jedoch deutlich robuster bei suboptimalen Bedingungen.
+
+---
+
+## 9B. NEUE ERGEBNISSE (13.01.2026)
+
+### Temporal Jitter Analysis
+
+**Was ist Jitter?** Frame-zu-Frame Schwankung der Pose-Schaetzung.
+
+| Modell | Mean Jitter | Median Jitter | Interpretation |
+|--------|-------------|---------------|----------------|
+| **MoveNet** | **1.06%** | **0.42%** | Stabilste Predictions |
+| YOLO | 1.12% | 0.38% | Aehnlich stabil |
+| MediaPipe | 1.51% | 0.53% | 42% mehr Jitter |
+
+**Ursachen-Analyse:**
+- Joint-Wechsel (erscheinen/verschwinden) verursachen 3-5x hoeheren Jitter
+- MediaPipe: Rechte Seite instabil (Knee 3.44%, Ankle 2.81% Flip-Rate)
+- MoveNet: Handgelenke instabil (5% Flip-Rate)
+- YOLO: Stabilste Joint-Detection (nur 3.3% Frames mit Wechseln)
+
+**Multi-Person Effekt auf Stabilitaet:**
+- MediaPipe: +150% mehr Joint-Wechsel bei Coach-Videos
+- YOLO: -85% weniger (klebt an einer Person)
+- Trade-off: Richtige Person vs. stabile Prediction
+
+### Detection Quality Analysis
+
+| Modell | Vollstaendige Detection (12/12 Joints) | Error bei <12 Joints |
+|--------|----------------------------------------|----------------------|
+| YOLO | **87.8%** | +15% |
+| MoveNet | 79.2% | +27% |
+| MediaPipe | 64.0% | **+34%** |
+
+**Problem-Joints bei MediaPipe:**
+- Right Elbow: nur 75.3% erkannt
+- Right Wrist: nur 77.0% erkannt
+- Right Knee: nur 86.3% erkannt
+
+**Praktische Implikation:** Quality-Filter auf valid_joints implementieren
 
 ---
 
@@ -792,6 +838,10 @@ Nach dem Literaturvergleich:
 
 | Datum | Aenderung |
 |-------|-----------|
+| 13.01.2026 | **Temporal Jitter Analyse** - MoveNet 42% stabiler als MediaPipe |
+| 13.01.2026 | **Detection Quality Analyse** - YOLO 87.8% vs MediaPipe 64% vollstaendig |
+| 13.01.2026 | **Ursachen-Analyse** - Joint-Flips verursachen 3-5x mehr Jitter |
+| 13.01.2026 | **Multi-Person Stabilitaets-Trade-off** identifiziert |
 | 11.01.2026 | **Baldinger et al. (2025) analysiert** - Camera Viewing Angle Effects (OpenPose, Viewpoint-Validierung) |
 | 11.01.2026 | **Aguilar-Ortega et al. (2023) analysiert** - UCO Dataset (WICHTIGSTES Paper, direktester Vergleich!) |
 | 11.01.2026 | **Ullah et al. (2025) analysiert** - Real-Time Action Scoring (MediaPipe, DTW/NCC) |
@@ -804,17 +854,39 @@ Nach dem Literaturvergleich:
 
 ---
 
-## 11. NOCH ZU LESENDE PAPER
+## 11. ANALYSE-DATEIEN
 
-| Paper | Datei | Status | Relevanz |
-|-------|-------|--------|----------|
-| REHAB24-6 Dataset | `docs/Rehab24-6.pdf` | Teilweise analysiert | ⭐⭐⭐⭐⭐ |
-| Roggio et al. (2024) | `docs/main.pdf` | ✓ Analysiert | ⭐⭐⭐⭐⭐ |
-| Debnath et al. (2022) | `docs/s00530-021-00815-4.pdf` | ✓ Analysiert | ⭐⭐⭐ (Background) |
-| Ullah et al. (2025) | `docs/s41598-025-29062-7.pdf` | ✓ Analysiert | ⭐⭐⭐⭐ (Sehr relevant) |
-| Aguilar-Ortega et al. (2023) | `docs/sensors-23-08862.pdf` | ✓ Analysiert | ⭐⭐⭐⭐⭐ (Direktester Vergleich!) |
-| Baldinger et al. (2025) | `docs/sensors-25-00799-v2.pdf` | ✓ Analysiert | ⭐⭐⭐⭐ (Viewpoint-Validierung) |
+| Datei | Inhalt |
+|-------|--------|
+| `analysis/EVALUATION_SUMMARY.md` | Hauptergebnisse (Accuracy, Rotation, Selection) |
+| `analysis/ADDITIONAL_ANALYSIS_REPORT.md` | Jitter, Detection Quality, Ursachen-Analyse |
+| `analysis/evaluation_results.tex` | LaTeX-Version aller Ergebnisse |
+| `analysis/results/temporal_jitter.csv` | Jitter-Statistiken |
+| `analysis/results/valid_joints_analysis.csv` | Detection Quality Daten |
+| `analysis/results/joint_detection_rate.csv` | Per-Joint Detection Rates |
+| `analysis/results/frame_level_data.csv` | Alle 363k Frames mit allen Metriken |
 
 ---
 
-**NAECHSTER SCHRITT:** Literaturvergleich ist KOMPLETT! Nun: Thesis-Struktur definieren und Related Work Section schreiben.
+## 12. THESIS-STRATEGIE (Stand 13.01.2026)
+
+### Empfohlener Fokus: Breite Evaluation statt einzelner Fund
+
+**Titel-Vorschlag:**
+> "Evaluating Mobile Pose Estimation Models for Home-Based Rehabilitation: Accuracy, Stability, and Robustness"
+
+**Research Questions:**
+1. Wie genau sind mobile HPE-Modelle auf echten Reha-Daten? (Accuracy)
+2. Wie stabil sind die Predictions ueber Zeit? (Temporal Stability)
+3. Wie robust sind die Modelle bei suboptimalen Bedingungen? (Viewpoint, Multi-Person)
+4. Welche praktischen Empfehlungen ergeben sich fuer mobile Reha-Apps?
+
+**Contributions (alle zusammen):**
+1. Erste MoveNet-Evaluation auf Rehabilitation-Daten mit MoCap Ground Truth
+2. Erste systematische Temporal Stability Analyse fuer mobile HPE-Modelle
+3. Quantifizierung von Selection-Strategien bei Multi-Person
+4. Praktische Guidelines fuer Previa Health / mobile Physio-Apps
+
+---
+
+**NAECHSTER SCHRITT:** Thesis-Outline schreiben, Betreuer konsultieren

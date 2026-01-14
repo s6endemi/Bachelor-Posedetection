@@ -1,0 +1,216 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[margin=2cm]{geometry}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{float}
+\usepackage{amsmath}
+\usepackage{enumitem}
+
+\definecolor{bestcolor}{RGB}{200, 230, 200}
+\definecolor{highlight}{RGB}{255, 255, 200}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.5em}
+
+\title{\textbf{Pose Estimation Evaluation}\\[0.3em]\large Übersicht für Betreuer-Gespräch}
+\author{[Name]}
+\date{Januar 2026}
+
+\begin{document}
+\maketitle
+
+%==============================================================================
+\section*{Executive Summary}
+%==============================================================================
+
+\begin{table}[H]
+\centering
+\begin{tabular}{@{}ll@{}}
+\toprule
+\textbf{Aspekt} & \textbf{Ergebnis} \\
+\midrule
+Datenbasis & 363.529 Frames, 126 Videos, MoCap Ground Truth \\
+Modelle & MediaPipe, MoveNet, YOLOv8-Pose (alle mobile-optimiert) \\
+\midrule
+Accuracy & MediaPipe $\approx$ MoveNet (\textbf{nicht signifikant}, $p=0.098$) \\
+Rotation Robustheit & MediaPipe am besten (+31\% vs +54\% Degradation) \\
+Multi-Person Robustheit & MediaPipe 2x besser (Torso- vs BBox-Selection) \\
+Temporal Stability & MoveNet am stabilsten (42\% weniger Jitter) \\
+\midrule
+\rowcolor{highlight}
+\textbf{Haupterkenntnis} & \textbf{Kein Modell dominiert -- Trade-offs je nach Szenario} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+%==============================================================================
+\section{Methodik}
+%==============================================================================
+
+\textbf{Dataset:} REHAB24-6 (öffentlich, Zenodo)
+\begin{itemize}[nosep]
+    \item 21 Rehabilitations-Patienten, 6 Physiotherapie-Übungen
+    \item 2 Kameras: c17 (frontal, 0--70°), c18 (lateral, 20--90°)
+    \item Ground Truth: Optisches Motion Capture System
+\end{itemize}
+
+\textbf{Metrik:} NMPJPE (Normalized Mean Per Joint Position Error)
+\begin{itemize}[nosep]
+    \item Fehler normalisiert auf Torso-Länge (vergleichbar über Personen)
+    \item 10\% NMPJPE $\approx$ 5cm Fehler pro Gelenk (bei 50cm Torso)
+\end{itemize}
+
+%==============================================================================
+\section{Ergebnisse im Detail}
+%==============================================================================
+
+\subsection{Accuracy (bereinigt, ohne Ausreißer)}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{@{}lccc@{}}
+\toprule
+Modell & Mean NMPJPE & Median NMPJPE & Std \\
+\midrule
+MoveNet & 11.5\% & 10.4\% & 5.5\% \\
+MediaPipe & 12.5\% & 11.2\% & 7.2\% \\
+YOLO & 12.9\% & 11.3\% & 6.8\% \\
+\midrule
+\multicolumn{4}{l}{\small MediaPipe vs MoveNet: $p=0.098$ (nicht signifikant), Cohen's $d=0.009$} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Rotation Robustheit}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+Modell & Frontal (0--20°) & Lateral (80--90°) & Relativer Anstieg \\
+\midrule
+\rowcolor{bestcolor}
+\textbf{MediaPipe} & 10.2\% & 13.3\% & \textbf{+31\%} \\
+MoveNet & 9.0\% & 13.8\% & +54\% \\
+YOLO & 9.4\% & 14.9\% & +58\% \\
+\bottomrule
+\end{tabular}
+\caption{MediaPipe ist am robustesten gegenüber Rotation.}
+\end{table}
+
+\subsection{Multi-Person Robustheit (Selection-Strategie)}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+Modell & Selection & Clean Mean & Coach Mean & Anstieg \\
+\midrule
+\rowcolor{bestcolor}
+\textbf{MediaPipe} & Torso-Größe & 14.5\% & 44.8\% & \textbf{+209\%} \\
+MoveNet & BBox-Fläche & 14.8\% & 64.9\% & +340\% \\
+YOLO & BBox-Fläche & 17.7\% & 66.1\% & +274\% \\
+\bottomrule
+\end{tabular}
+\caption{MediaPipe's Torso-basierte Selection ist $\sim$2x robuster. (N=5 Coach-Videos)}
+\end{table}
+
+\subsection{Temporal Stability (Jitter)}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{@{}lccc@{}}
+\toprule
+Modell & Mean Jitter & Median Jitter & Interpretation \\
+\midrule
+\rowcolor{bestcolor}
+\textbf{MoveNet} & \textbf{1.06\%} & 0.42\% & Stabilste Predictions \\
+YOLO & 1.12\% & 0.38\% & Ähnlich stabil \\
+MediaPipe & 1.51\% & 0.53\% & 42\% mehr Variation \\
+\bottomrule
+\end{tabular}
+\caption{MoveNet liefert die stabilsten Frame-zu-Frame Predictions.}
+\end{table}
+
+%==============================================================================
+\section{Vergleich mit Literatur}
+%==============================================================================
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{@{}p{3.5cm}p{4cm}p{4cm}@{}}
+\toprule
+\textbf{Paper} & \textbf{Was sie machen} & \textbf{Was wir ergänzen} \\
+\midrule
+UCO Dataset (2023) & 8 Modelle, gesunde Probanden & MoveNet, echte Patienten \\
+Baldinger (2025) & OpenPose, 4 Winkel & 3 mobile Modelle, 0--90° \\
+Ullah (2025) & MediaPipe für Scoring & Modellvergleich, Jitter \\
+\midrule
+\textbf{Gap} & Selection-Strategien nicht verglichen & \textbf{Torso vs BBox quantifiziert} \\
+\textbf{Gap} & Temporal Stability nicht untersucht & \textbf{Jitter-Analyse} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+%==============================================================================
+\section{Geplante Thesis-Richtung}
+%==============================================================================
+
+\textbf{Arbeitstitel:} ``Evaluating Mobile Pose Estimation Models for Home-Based Rehabilitation: Accuracy, Stability, and Robustness''
+
+\textbf{Research Questions:}
+\begin{enumerate}[nosep]
+    \item Wie genau sind mobile HPE-Modelle auf echten Reha-Daten?
+    \item Wie stabil sind die Predictions über Zeit?
+    \item Wie robust sind die Modelle bei suboptimalen Bedingungen?
+    \item Welche praktischen Empfehlungen ergeben sich?
+\end{enumerate}
+
+\textbf{Contributions:}
+\begin{itemize}[nosep]
+    \item Erste MoveNet-Evaluation auf Reha-Daten mit MoCap Ground Truth
+    \item Erste systematische Temporal Stability Analyse für mobile HPE
+    \item Quantifizierung von Selection-Strategien bei Multi-Person
+    \item Praktische Guidelines für mobile Physiotherapie-Apps
+\end{itemize}
+
+%==============================================================================
+\section{Empfehlung für Previa Health}
+%==============================================================================
+
+\begin{table}[H]
+\centering
+\begin{tabular}{@{}lll@{}}
+\toprule
+\textbf{Szenario} & \textbf{Empfehlung} & \textbf{Begründung} \\
+\midrule
+\rowcolor{bestcolor}
+Home-Based Reha & \textbf{MediaPipe} & Robuster bei Rotation \& Multi-Person \\
+Kontrollierte Umgebung & MoveNet & Etwas genauer, stabiler \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+%==============================================================================
+\section{Limitationen}
+%==============================================================================
+
+\begin{itemize}[nosep]
+    \item Bimodale Rotationsverteilung (keine kontinuierliche Rotation während Übungen)
+    \item Nur 5 Coach-Videos für Multi-Person-Analyse
+    \item Nur mobile Modellvarianten getestet
+\end{itemize}
+
+%==============================================================================
+\section*{Offene Frage an Betreuer}
+%==============================================================================
+
+\fbox{\parbox{0.95\textwidth}{
+Ist der breite Evaluations-Fokus (Accuracy + Stability + Robustness) tragfähig für eine Bachelorarbeit, oder sollte stärker auf einen einzelnen Aspekt fokussiert werden?
+}}
+
+\end{document}
