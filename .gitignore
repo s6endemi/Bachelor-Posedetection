@@ -44,6 +44,9 @@ data/predictions/
 *.mp4
 *.avi
 
+# Grosse CSV-Dateien (>50MB)
+analysis/results/frame_level_data.csv
+
 # Model weights
 *.tflite
 *.pb
