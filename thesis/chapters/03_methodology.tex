@@ -1,0 +1,242 @@
+% =============================================================================
+\chapter{Methodology}
+\label{ch:methodology}
+% =============================================================================
+
+The study is motivated by home-based rehabilitation, but it is designed as a controlled model comparison on a rehabilitation-oriented proxy benchmark, not as direct clinical validation.
+
+% -----------------------------------------------------------------------------
+\section{Dataset: REHAB24-6}
+\label{sec:dataset}
+% -----------------------------------------------------------------------------
+
+The primary benchmark is REHAB24-6~\cite{cernek2025rehab246}, a public dataset of physiotherapist-guided rehabilitation exercises with synchronized RGB and motion-capture recordings. The released dataset contains 65 recordings of six exercises performed by 10 healthy adult volunteers, segmented into 1{,}072 annotated repetitions across two 30\,fps RGB views. We use the projected 2D coordinates of the derived 26-joint motion-capture skeleton as ground truth for 2D pose evaluation.
+
+REHAB24-6 is rehabilitation-oriented, but it is not a clinical patient cohort. We therefore treat it as a proxy testbed for rehabilitation-style movement analysis rather than as patient validation.
+
+Table~\ref{tab:dataset} summarizes the released dataset and the processed evaluation subset used here. In the repository state used for this thesis, the evaluation artifacts cover 63 recording identifiers with both camera views and matching ground truth, yielding 126 evaluated camera-view sequences.
+
+\begin{table}[htbp]
+  \centering
+  \caption{Overview of REHAB24-6 and the processed evaluation subset used in this thesis.}
+  \label{tab:dataset}
+  \small
+  \setlength{\tabcolsep}{4pt}
+  \begin{tabular}{p{0.34\textwidth}p{0.56\textwidth}}
+    \toprule
+    Property & Value \\
+    \midrule
+    Subjects & 10 healthy adult volunteers (6 male, 4 female; age 25--50) \\
+    Exercises & 6 physiotherapist-guided rehabilitation exercises \\
+    Public recordings & 65 \\
+    Annotated repetitions & 1{,}072 \\
+    RGB cameras & 2 synchronized views at 30\,fps \\
+    Ground truth & 41-marker motion capture, projected to 2D; 26-joint skeleton \\
+    Processed evaluation subset & 63 recording identifiers, 126 camera-view sequences \\
+    Frames analyzed & 367{,}200 model-frame observations before filtering \\
+    Coach extreme-case subset & 5 camera-c17 sequences \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+Two aspects of the dataset are central to the later analyses. First, the fixed camera setup produces two characteristic viewpoints: camera~c17 is predominantly frontal, whereas camera~c18 is predominantly lateral. Second, the segmentation metadata labels whether additional persons are visible, enabling a dataset-wide multi-person subset analysis. In addition to this metadata-based subset, five c17 sequences with a prominently visible therapist are treated as an extreme-case coach subset.
+
+% -----------------------------------------------------------------------------
+\section{Auxiliary Benchmark: COCO val2017}
+\label{sec:coco-dataset}
+% -----------------------------------------------------------------------------
+
+To assess how benchmark rankings transfer across domains, we additionally evaluate all model variants on COCO val2017~\cite{lin2014coco} for body-joint accuracy and ranking comparison only; rotation, temporal stability, and coach-scene analyses remain specific to REHAB24-6.
+
+We evaluate 1{,}519 validation images that contain at least one annotated person with at least six labeled keypoints. For each image, the predicted instance is matched to the ground-truth person with the nearest torso center. The same 12 comparable body joints used in REHAB24-6 are evaluated, and only visible ground-truth joints are included. Because target matching and visibility handling differ from REHAB24-6, COCO serves as a transferability benchmark under a different evaluation protocol, not as a directly equivalent rehabilitation benchmark.
+
+% -----------------------------------------------------------------------------
+\section{Models Under Evaluation}
+\label{sec:model-config}
+% -----------------------------------------------------------------------------
+
+The evaluation centers on three mobile pose-estimation models representing the three dominant architectural paradigms in human pose estimation~\cite{zheng2023deep}: top-down, bottom-up, and one-stage. The primary comparison uses MediaPipe Full, MoveNet MultiPose, and YOLOv8 Nano. To analyze intra-family trade-offs, six additional variants are included: MediaPipe Lite and Heavy, MoveNet SinglePose Lightning and Thunder, and YOLOv8 Small and Medium.
+
+\begin{table}[htbp]
+  \centering
+  \caption{Model families, primary configurations, and additional variants.}
+  \label{tab:models}
+  \begin{tabular}{p{2.5cm}p{2.7cm}p{3.2cm}p{2.2cm}p{3.0cm}}
+    \toprule
+    Family & Primary configuration & Additional variants & Native keypoints & Native person output \\
+    \midrule
+    MediaPipe Pose & Full & Lite, Heavy & 33 landmarks & Up to 5 persons, no bounding boxes \\
+    MoveNet & MultiPose & SinglePose Lightning, SinglePose Thunder & 17 COCO keypoints & MultiPose: up to 6 persons with bounding boxes; SinglePose: one person \\
+    YOLOv8-Pose & Nano & Small, Medium & 17 COCO keypoints & Variable number of persons with bounding boxes \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+\FloatBarrier
+
+\paragraph{MediaPipe Pose.}
+The primary comparison uses the Full variant (\texttt{model\_complexity=1}); the variant analysis additionally includes Lite and Heavy. For all MediaPipe variants, we use \texttt{min\_pose\_detection\_confidence=0.1}, as stricter defaults caused avoidable detection failures in earlier runs. This parameter is a model-internal detection-stage threshold and should not be confused with the joint-level evaluation filter described in Section~\ref{sec:outlier-handling}.
+
+\paragraph{MoveNet.}
+MoveNet~\cite{google2021movenet} is evaluated in its MultiPose configuration for the main three-model comparison because it exposes multi-person detections and bounding boxes. The SinglePose Lightning and Thunder variants are included only for the family-level speed--accuracy analysis, since they do not expose comparable multi-person outputs.
+
+\paragraph{YOLOv8-Pose.}
+YOLOv8-Pose~\cite{jocher2023yolov8} uses the Nano model in the primary comparison, while the Small and Medium variants are included for intra-family trade-off analysis.
+
+% -----------------------------------------------------------------------------
+\section{Keypoint Mapping}
+\label{sec:keypoint-mapping}
+% -----------------------------------------------------------------------------
+
+The evaluated models and the motion-capture ground truth use different landmark definitions: MediaPipe predicts 33 landmarks, MoveNet and YOLOv8 use the 17-point COCO skeleton, and the ground truth provides 26 skeletal joints. We therefore map all predictions into 12 anatomically corresponding body joints: shoulders, elbows, wrists, hips, knees, and ankles.
+
+\begin{table}[htbp]
+  \centering
+  \caption{Keypoint mapping across the ground truth, COCO skeleton, and MediaPipe landmarks.}
+  \label{tab:keypoint-mapping}
+  \begin{tabular}{llccc}
+    \toprule
+    Joint & Ground-truth joint & COCO index & MediaPipe index & Evaluated \\
+    \midrule
+    Left Shoulder  & LeftArm      & 5  & 11 & \checkmark \\
+    Right Shoulder & RightArm     & 6  & 12 & \checkmark \\
+    Left Elbow     & LeftForeArm  & 7  & 13 & \checkmark \\
+    Right Elbow    & RightForeArm & 8  & 14 & \checkmark \\
+    Left Wrist     & LeftHand     & 9  & 15 & \checkmark \\
+    Right Wrist    & RightHand    & 10 & 16 & \checkmark \\
+    Left Hip       & LeftUpLeg    & 11 & 23 & \checkmark \\
+    Right Hip      & RightUpLeg   & 12 & 24 & \checkmark \\
+    Left Knee      & LeftLeg      & 13 & 25 & \checkmark \\
+    Right Knee     & RightLeg     & 14 & 26 & \checkmark \\
+    Left Ankle     & LeftFoot     & 15 & 27 & \checkmark \\
+    Right Ankle    & RightFoot    & 16 & 28 & \checkmark \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+Facial landmarks are excluded because the ground truth provides no corresponding markers. The resulting 12-joint evaluation space focuses the comparison on the major limb segments most relevant to rehabilitation-style movement analysis.
+
+% -----------------------------------------------------------------------------
+\section{Primary Accuracy Metric}
+\label{sec:nmpjpe}
+% -----------------------------------------------------------------------------
+
+The primary accuracy measure is the \emph{Normalized Mean Per Joint Position Error} (NMPJPE), reported as a percentage of torso length~\cite{ionescu2014human36m}. For a frame with $N = 12$ evaluated joints,
+
+\begin{equation}
+  \text{NMPJPE} = \frac{1}{N} \sum_{i=1}^{N} \frac{\lVert \mathbf{p}_i - \mathbf{g}_i \rVert_2}{L_{\text{torso}}} \times 100\%
+  \label{eq:nmpjpe}
+\end{equation}
+
+\noindent where $\mathbf{p}_i$ and $\mathbf{g}_i$ are the predicted and ground-truth 2D coordinates of joint~$i$. Torso length is defined from the shoulder and hip midpoints in the ground truth:
+
+\begin{equation}
+  L_{\text{torso}} =
+  \left\lVert
+  \frac{\mathbf{g}_{\text{LSh}} + \mathbf{g}_{\text{RSh}}}{2}
+  -
+  \frac{\mathbf{g}_{\text{LHip}} + \mathbf{g}_{\text{RHip}}}{2}
+  \right\rVert_2
+  \label{eq:torso}
+\end{equation}
+
+This normalization makes errors comparable across subjects, camera distances, and image resolutions. In addition to NMPJPE, we report \emph{detection completeness} through the number of valid evaluated joints per frame and the proportion of frames with all 12 joints present after confidence filtering.
+
+% -----------------------------------------------------------------------------
+\section{Rotation and Viewpoint Annotation}
+\label{sec:rotation}
+% -----------------------------------------------------------------------------
+
+To characterize viewpoint sensitivity, we derive a camera-relative body orientation from the 3D ground truth rather than from the 2D predictions. This avoids circularity, since prediction errors would otherwise distort the angle estimate itself. The raw body orientation is computed from the 3D shoulder positions:
+
+\begin{equation}
+  \theta_{\text{raw}} = \operatorname{atan2}\!\bigl(|\Delta z|,\; |\Delta x|\bigr), \quad
+  \Delta x = x_{\text{RSh}} - x_{\text{LSh}}, \quad
+  \Delta z = z_{\text{RSh}} - z_{\text{LSh}}
+  \label{eq:rotation-raw}
+\end{equation}
+
+Because the RGB cameras are not aligned with the motion-capture axes, a camera-relative offset must be applied. Since REHAB24-6 does not provide full camera extrinsics, we estimated this offset empirically from reference frames in which subjects stood approximately frontal to each camera:
+
+\begin{equation}
+  \theta_{\text{c17}} = |\theta_{\text{raw}} - 65^{\circ}|, \qquad
+  \theta_{\text{c18}} = 90^{\circ} - \theta_{\text{c17}}
+  \label{eq:rotation-cam}
+\end{equation}
+
+The 65\textdegree{} c17 offset is a single global calibration derived from three frontal reference recordings (PM\_114, PM\_122, PM\_109), with an estimated uncertainty of approximately $\pm 5$\textdegree{}. It is not re-estimated per video. The 10\textdegree{} angle bins used later in the rotation analysis are wider than this uncertainty, so the calibration error stays inside the binning resolution.
+
+The resulting values range from 0\textdegree{} (frontal) to 90\textdegree{} (lateral) and are analyzed in 10\textdegree{} bins. In practice, the REHAB24-6 distribution is strongly bimodal: frames are concentrated in mostly frontal or mostly lateral views, with comparatively few intermediate poses. We therefore interpret this analysis as viewpoint sensitivity under fixed camera geometry, not as a dense continuous rotation study.
+
+% -----------------------------------------------------------------------------
+\section{Multi-Person Categorization and Person Selection}
+\label{sec:person-selection}
+% -----------------------------------------------------------------------------
+
+Multi-person effects are examined through two complementary subsets. First, the segmentation metadata provides an \texttt{extra\_person} severity label, which allows a dataset-wide multi-person subset analysis. We define this subset as frames with severity $\geq 2$, corresponding to clearly visible secondary persons or body parts. Second, we define an extreme-case coach subset of five c17 sequences (PM\_010, PM\_011, PM\_108, PM\_119, PM\_121), identified by manual review for sustained therapist visibility across the recording.
+
+When more than one person is detected, the evaluation pipeline must select a target instance. We therefore use model-specific heuristics that match the native outputs of each model.
+
+For MoveNet MultiPose and YOLOv8, the selected instance is the one with the largest bounding-box area. For MediaPipe, which does not provide native bounding boxes, the selected instance is the one with the largest torso extent in image space. This avoids pseudo-bounding boxes derived from keypoint extremes, which vary strongly with limb spread and do not reliably reflect apparent person size.
+
+These heuristics are evaluation design choices matching each model's native output format. We use them to keep the comparison reproducible and output-consistent, and we interpret selection effects separately from the underlying pose predictions: selection belongs to the evaluation pipeline, not to the pose estimator itself. Later analyses distinguish between detection-level behavior, which determines how often multiple candidate persons reach the selection stage, and downstream behavior beyond simple person-count frequency.
+
+% -----------------------------------------------------------------------------
+\section{Temporal Stability}
+\label{sec:stability-method}
+% -----------------------------------------------------------------------------
+
+Temporal stability is approximated through normalized frame-to-frame prediction displacement. For two consecutive sampled frames $t$ and $t+1$, the displacement of joint~$i$ is
+
+\begin{equation}
+  D_i^t =
+  \frac{\lVert \mathbf{p}_i^{t+1} - \mathbf{p}_i^t \rVert_2}
+  {\frac{1}{2}(L_{\text{torso}}^{t} + L_{\text{torso}}^{t+1})}
+  \times 100\%
+  \label{eq:prediction-displacement}
+\end{equation}
+
+\noindent where the denominator is the mean torso length of the two corresponding ground-truth frames. A joint contributes only if it is valid in both frames after confidence filtering. Per-frame displacement is the mean across valid evaluated joints, and per-model displacement is the mean across all such frame pairs. This metric does not subtract ground-truth motion; it is therefore a stability proxy for the predicted trajectories rather than a direct decomposition of model noise from true movement. Because the source frame pairs come from the same videos under the shared sampling protocol, lower values indicate less frame-to-frame movement in the predicted trajectories.
+
+% -----------------------------------------------------------------------------
+\section{Confidence Filtering and Outlier Handling}
+\label{sec:outlier-handling}
+% -----------------------------------------------------------------------------
+
+All evaluated models provide a confidence value per predicted joint. For accuracy computation, joints with confidence below 0.5 are excluded from the frame-level NMPJPE. This threshold is deliberately applied at the joint level rather than as a whole-frame rejection rule, so partially reliable predictions remain usable. The same threshold is used for temporal stability, where a joint contributes only if it is valid in both consecutive frames.
+
+Frames in which no valid person is detected are marked as detection failures and excluded from central-tendency accuracy summaries. Frames with NMPJPE exceeding 100\% of torso length are treated as extreme outliers and interpreted as catastrophic misassignment or wrong-person failures. These outliers are removed from the primary central-tendency subset, but they remain relevant for robustness analyses in which failure rate itself is an outcome.
+
+Accordingly, the thesis distinguishes between two reporting regimes:
+\begin{itemize}
+  \item \textbf{Central tendency}: valid subset only (no detection failure, no $>$100\% outlier, no MoCap error on REHAB24-6).
+  \item \textbf{Failure behavior}: outliers retained when the analysis explicitly concerns catastrophic person-switch events or coach-scene robustness.
+\end{itemize}
+
+% -----------------------------------------------------------------------------
+\section{Frame-Independent Evaluation Mode}
+\label{sec:frame-independent}
+% -----------------------------------------------------------------------------
+
+All models are evaluated frame-independently. MediaPipe runs in \texttt{IMAGE} mode, MoveNet processes each frame without temporal cropping or tracking memory, and YOLOv8 is evaluated through frame-wise prediction rather than object tracking. This choice isolates model-level prediction behavior from pipeline-level temporal engineering such as tracker association, Kalman filtering, or smoothing.
+
+This design has an important consequence for interpretation: the reported person-switch and temporal-stability values describe unsmoothed model behavior under frame-independent processing. They should therefore be read as upper-bound failure characteristics of the raw model outputs, not as direct estimates of a fully engineered deployment pipeline.
+
+% -----------------------------------------------------------------------------
+\section{Inference Time Benchmark}
+\label{sec:inference-method}
+% -----------------------------------------------------------------------------
+
+We benchmark inference time separately from the accuracy evaluation to isolate model latency from data loading and metric computation. All benchmarks run on CPU-only hardware and use three c17 videos selected consistently across models, with 500 measured frames per video and a 50-frame warm-up period. Timing is recorded per frame using high-resolution performance counters.
+
+The benchmark covers all nine evaluated configurations. Each model is measured sequentially to avoid resource contention. For deployment realism, MediaPipe variants use the Tasks API, MoveNet variants use TFLite runtimes, and YOLOv8 variants use the Ultralytics PyTorch runtime.
+
+% -----------------------------------------------------------------------------
+\section{Frame Sampling and Statistical Analysis}
+\label{sec:frame-sampling}
+% -----------------------------------------------------------------------------
+
+The RGB videos are recorded at 30\,fps. To reduce temporal redundancy and the amount of near-duplicate frames, we process every third frame, yielding an effective sampling rate of 10\,Hz. This is sufficient for the relatively slow rehabilitation-style movements in the dataset while substantially reducing autocorrelation and computational cost.
+
+For inferential analysis on REHAB24-6, frames are not treated as independent observations. Instead, we first compute a median NMPJPE per camera-view sequence, then average these sequence medians within each subject cluster identified by the segmentation metadata \texttt{person\_id}. This yields 10 primary subject clusters in the processed repository state. Pairwise model comparisons on this primary level use two-sided sign-flip permutation tests on the cluster-wise differences, evaluated by exact enumeration over all $2^{10}=1024$ sign assignments. We accompany the tests with percentile bootstrap confidence intervals (20{,}000 resamples) and Holm correction for multiple comparisons. Video-level comparisons are reported only as a secondary sensitivity analysis and use the same paired test with Monte Carlo sampling because the video-level sign-assignment space is much larger.
+
+This subject-cluster aggregation is used only for REHAB24-6 inferential statements. Cross-dataset comparisons with COCO remain descriptive because the COCO protocol differs in target matching and visibility handling.

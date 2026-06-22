@@ -1,0 +1,58 @@
+{
+  "models": {
+    "MediaPipe": {
+      "accuracy": {
+        "mean_nmpjpe": 12.53,
+        "std_nmpjpe": 7.05,
+        "median_nmpjpe": 11.26,
+        "n_frames": 119729
+      },
+      "detection": {
+        "full_detection_rate": 55.1,
+        "detection_failure_rate": 0.0
+      },
+      "multi_person": {
+        "single_mean": 12.51,
+        "multi_mean": 12.67,
+        "n_multi_frames": 10596
+      }
+    },
+    "MoveNet": {
+      "accuracy": {
+        "mean_nmpjpe": 10.52,
+        "std_nmpjpe": 4.66,
+        "median_nmpjpe": 9.85,
+        "n_frames": 119439
+      },
+      "detection": {
+        "full_detection_rate": 38.2,
+        "detection_failure_rate": 0.0
+      },
+      "multi_person": {
+        "single_mean": 10.56,
+        "multi_mean": 10.04,
+        "n_multi_frames": 10703
+      }
+    },
+    "YOLOv8": {
+      "accuracy": {
+        "mean_nmpjpe": 12.77,
+        "std_nmpjpe": 6.73,
+        "median_nmpjpe": 11.23,
+        "n_frames": 115711
+      },
+      "detection": {
+        "full_detection_rate": 79.1,
+        "detection_failure_rate": 0.0
+      },
+      "multi_person": {
+        "single_mean": 12.82,
+        "multi_mean": 12.25,
+        "n_multi_frames": 10286
+      }
+    }
+  },
+  "total_frames": 354879,
+  "total_valid_frames": 354879,
+  "n_videos": 126
+}

@@ -1,0 +1,835 @@
+{
+  "descriptive": {
+    "rows_total": 367200,
+    "rows_clean": 363074,
+    "rows_valid": 354879,
+    "processed_views": 126,
+    "coach_views": 5,
+    "rotation_distribution_reference_movenet_valid": {
+      "frontal_pct": 40.8,
+      "intermediate_pct": 17.5,
+      "lateral_pct": 41.6
+    }
+  },
+  "accuracy_main_valid": [
+    {
+      "model": "MediaPipe",
+      "mean": 12.528106602630674,
+      "median": 11.25619008059946,
+      "std": 7.050054535452428,
+      "size": 119729
+    },
+    {
+      "model": "MoveNet",
+      "mean": 10.516326715568798,
+      "median": 9.850278436542323,
+      "std": 4.659938247234305,
+      "size": 119439
+    },
+    {
+      "model": "YOLOv8",
+      "mean": 12.766196325555258,
+      "median": 11.22688239195844,
+      "std": 6.725269775882775,
+      "size": 115711
+    }
+  ],
+  "accuracy_cluster_stats": [
+    {
+      "model": "MoveNet",
+      "mean": 10.734497459365112,
+      "median": 10.852617901600205,
+      "std": 1.9360695255181173,
+      "n_clusters": 10
+    },
+    {
+      "model": "MediaPipe",
+      "mean": 11.741220348163344,
+      "median": 12.196420005133056,
+      "std": 1.8811176183007083,
+      "n_clusters": 10
+    },
+    {
+      "model": "YOLOv8",
+      "mean": 12.231527718296292,
+      "median": 12.78253519701487,
+      "std": 1.8647507521720492,
+      "n_clusters": 10
+    }
+  ],
+  "pairwise_cluster_tests": [
+    {
+      "model_a": "MediaPipe",
+      "model_b": "MoveNet",
+      "n_pairs": 10,
+      "mean_diff": 1.0067228887982327,
+      "median_diff": 0.8659766344286384,
+      "effect_size_dz": 1.479931786235456,
+      "ci_low": 0.6218043600981658,
+      "ci_high": 1.421014218837596,
+      "p_value": 0.001953125,
+      "p_value_holm": 0.005859375,
+      "level": "patient"
+    },
+    {
+      "model_a": "MediaPipe",
+      "model_b": "YOLOv8",
+      "n_pairs": 10,
+      "mean_diff": -0.49030737013294495,
+      "median_diff": -0.38635876321107343,
+      "effect_size_dz": -0.7885683955113886,
+      "ci_low": -0.8518650389094676,
+      "ci_high": -0.11941276921533236,
+      "p_value": 0.03515625,
+      "p_value_holm": 0.03515625,
+      "level": "patient"
+    },
+    {
+      "model_a": "MoveNet",
+      "model_b": "YOLOv8",
+      "n_pairs": 10,
+      "mean_diff": -1.4970302589311777,
+      "median_diff": -1.4271423020745955,
+      "effect_size_dz": -4.05212232067297,
+      "ci_low": -1.7098550862303306,
+      "ci_high": -1.2736215118938088,
+      "p_value": 0.001953125,
+      "p_value_holm": 0.005859375,
+      "level": "patient"
+    }
+  ],
+  "rotation_main": [
+    {
+      "model": "MediaPipe",
+      "frontal_mean": 11.277735010031597,
+      "lateral_mean": 14.379448783325003,
+      "degradation_pct": 27.502985045617923
+    },
+    {
+      "model": "MoveNet",
+      "frontal_mean": 9.754398921058923,
+      "lateral_mean": 11.4944698362473,
+      "degradation_pct": 17.83883281041243
+    },
+    {
+      "model": "YOLOv8",
+      "frontal_mean": 11.136354824679524,
+      "lateral_mean": 14.662548597167719,
+      "degradation_pct": 31.663805868269556
+    }
+  ],
+  "detection_completeness_main": [
+    {
+      "model": "MediaPipe",
+      "full_detection_pct": 55.07555861008158,
+      "mean_valid_joints": 10.715511810379388,
+      "median_valid_joints": 12.0
+    },
+    {
+      "model": "MoveNet",
+      "full_detection_pct": 38.18537912497644,
+      "mean_valid_joints": 10.308806778605437,
+      "median_valid_joints": 11.0
+    },
+    {
+      "model": "YOLOv8",
+      "full_detection_pct": 79.05908096280088,
+      "mean_valid_joints": 11.530331594007743,
+      "median_valid_joints": 12.0
+    }
+  ],
+  "segmentation_multi_person_main": [
+    {
+      "model": "MediaPipe",
+      "single_mean": 12.514279047005273,
+      "multi_mean": 12.670522856695134,
+      "delta_pct": 1.2485242585928313,
+      "n_multi_frames": 10596
+    },
+    {
+      "model": "MoveNet",
+      "single_mean": 10.563360308938739,
+      "multi_mean": 10.03849388284212,
+      "delta_pct": -4.968744895054611,
+      "n_multi_frames": 10703
+    },
+    {
+      "model": "YOLOv8",
+      "single_mean": 12.816810952316684,
+      "multi_mean": 12.247428385994327,
+      "delta_pct": -4.442466760574626,
+      "n_multi_frames": 10286
+    }
+  ],
+  "coach_detection_counts": [
+    {
+      "video_id": "PM_010",
+      "sampled_frames": 408,
+      "mediapipe_0p": 2,
+      "mediapipe_1p": 216,
+      "mediapipe_2p_plus": 190,
+      "mediapipe_0p_pct": 0.4901960784313725,
+      "mediapipe_1p_pct": 52.94117647058824,
+      "mediapipe_2p_plus_pct": 46.5686274509804,
+      "movenet_0p": 0,
+      "movenet_1p": 334,
+      "movenet_2p_plus": 74,
+      "movenet_0p_pct": 0.0,
+      "movenet_1p_pct": 81.86274509803921,
+      "movenet_2p_plus_pct": 18.137254901960784,
+      "yolo_0p": 0,
+      "yolo_1p": 331,
+      "yolo_2p_plus": 77,
+      "yolo_0p_pct": 0.0,
+      "yolo_1p_pct": 81.12745098039215,
+      "yolo_2p_plus_pct": 18.87254901960784
+    },
+    {
+      "video_id": "PM_011",
+      "sampled_frames": 164,
+      "mediapipe_0p": 0,
+      "mediapipe_1p": 120,
+      "mediapipe_2p_plus": 44,
+      "mediapipe_0p_pct": 0.0,
+      "mediapipe_1p_pct": 73.17073170731707,
+      "mediapipe_2p_plus_pct": 26.82926829268293,
+      "movenet_0p": 0,
+      "movenet_1p": 136,
+      "movenet_2p_plus": 28,
+      "movenet_0p_pct": 0.0,
+      "movenet_1p_pct": 82.92682926829268,
+      "movenet_2p_plus_pct": 17.073170731707318,
+      "yolo_0p": 0,
+      "yolo_1p": 111,
+      "yolo_2p_plus": 53,
+      "yolo_0p_pct": 0.0,
+      "yolo_1p_pct": 67.6829268292683,
+      "yolo_2p_plus_pct": 32.31707317073171
+    },
+    {
+      "video_id": "PM_108",
+      "sampled_frames": 283,
+      "mediapipe_0p": 0,
+      "mediapipe_1p": 272,
+      "mediapipe_2p_plus": 11,
+      "mediapipe_0p_pct": 0.0,
+      "mediapipe_1p_pct": 96.113074204947,
+      "mediapipe_2p_plus_pct": 3.886925795053004,
+      "movenet_0p": 0,
+      "movenet_1p": 255,
+      "movenet_2p_plus": 28,
+      "movenet_0p_pct": 0.0,
+      "movenet_1p_pct": 90.1060070671378,
+      "movenet_2p_plus_pct": 9.89399293286219,
+      "yolo_0p": 0,
+      "yolo_1p": 0,
+      "yolo_2p_plus": 283,
+      "yolo_0p_pct": 0.0,
+      "yolo_1p_pct": 0.0,
+      "yolo_2p_plus_pct": 100.0
+    },
+    {
+      "video_id": "PM_119",
+      "sampled_frames": 152,
+      "mediapipe_0p": 0,
+      "mediapipe_1p": 128,
+      "mediapipe_2p_plus": 24,
+      "mediapipe_0p_pct": 0.0,
+      "mediapipe_1p_pct": 84.21052631578947,
+      "mediapipe_2p_plus_pct": 15.789473684210526,
+      "movenet_0p": 0,
+      "movenet_1p": 111,
+      "movenet_2p_plus": 41,
+      "movenet_0p_pct": 0.0,
+      "movenet_1p_pct": 73.02631578947368,
+      "movenet_2p_plus_pct": 26.973684210526315,
+      "yolo_0p": 0,
+      "yolo_1p": 0,
+      "yolo_2p_plus": 152,
+      "yolo_0p_pct": 0.0,
+      "yolo_1p_pct": 0.0,
+      "yolo_2p_plus_pct": 100.0
+    },
+    {
+      "video_id": "PM_121",
+      "sampled_frames": 171,
+      "mediapipe_0p": 0,
+      "mediapipe_1p": 170,
+      "mediapipe_2p_plus": 1,
+      "mediapipe_0p_pct": 0.0,
+      "mediapipe_1p_pct": 99.41520467836256,
+      "mediapipe_2p_plus_pct": 0.5847953216374269,
+      "movenet_0p": 0,
+      "movenet_1p": 150,
+      "movenet_2p_plus": 21,
+      "movenet_0p_pct": 0.0,
+      "movenet_1p_pct": 87.71929824561403,
+      "movenet_2p_plus_pct": 12.280701754385964,
+      "yolo_0p": 0,
+      "yolo_1p": 0,
+      "yolo_2p_plus": 171,
+      "yolo_0p_pct": 0.0,
+      "yolo_1p_pct": 0.0,
+      "yolo_2p_plus_pct": 100.0
+    },
+    {
+      "video_id": "TOTAL",
+      "sampled_frames": 1178,
+      "mediapipe_0p": 2,
+      "mediapipe_1p": 906,
+      "mediapipe_2p_plus": 270,
+      "mediapipe_0p_pct": 0.1697792869269949,
+      "mediapipe_1p_pct": 76.91001697792869,
+      "mediapipe_2p_plus_pct": 22.920203735144312,
+      "movenet_0p": 0,
+      "movenet_1p": 986,
+      "movenet_2p_plus": 192,
+      "movenet_0p_pct": 0.0,
+      "movenet_1p_pct": 83.70118845500849,
+      "movenet_2p_plus_pct": 16.298811544991512,
+      "yolo_0p": 0,
+      "yolo_1p": 442,
+      "yolo_2p_plus": 736,
+      "yolo_0p_pct": 0.0,
+      "yolo_1p_pct": 37.52122241086588,
+      "yolo_2p_plus_pct": 62.478777589134125
+    }
+  ],
+  "coach_per_video_nmpjpe": [
+    {
+      "video_id": "PM_010",
+      "MediaPipe": 81.90111577482283,
+      "MoveNet": 70.70703637705178,
+      "YOLOv8": 69.85807289055255
+    },
+    {
+      "video_id": "PM_011",
+      "MediaPipe": 38.026274085087366,
+      "MoveNet": 59.701764353101495,
+      "YOLOv8": 66.15670391294096
+    },
+    {
+      "video_id": "PM_108",
+      "MediaPipe": 17.235549267372676,
+      "MoveNet": 46.19052754694812,
+      "YOLOv8": 51.07179800776622
+    },
+    {
+      "video_id": "PM_119",
+      "MediaPipe": 24.130194849553032,
+      "MoveNet": 73.9977491829334,
+      "YOLOv8": 72.99645130053582
+    },
+    {
+      "video_id": "PM_121",
+      "MediaPipe": 30.90473206365873,
+      "MoveNet": 60.29338354096768,
+      "YOLOv8": 75.30978736705292
+    }
+  ],
+  "true_jitter_main": [
+    {
+      "model": "MediaPipe",
+      "mean": 6.031685565455882,
+      "median": 3.249036690675972,
+      "size": 121971
+    },
+    {
+      "model": "MoveNet",
+      "mean": 3.807833063817787,
+      "median": 2.2218914331276935,
+      "size": 121652
+    },
+    {
+      "model": "YOLOv8",
+      "mean": 5.224996301993994,
+      "median": 2.589433640509142,
+      "size": 118260
+    }
+  ],
+  "true_jitter_all_variants": [
+    {
+      "model": "MediaPipe_Full",
+      "mean": 6.031685565455882,
+      "median": 3.249036690675972,
+      "size": 121971
+    },
+    {
+      "model": "MediaPipe_Heavy",
+      "mean": 6.039066705636894,
+      "median": 2.9657842647721724,
+      "size": 122117
+    },
+    {
+      "model": "MediaPipe_Lite",
+      "mean": 7.244037077995445,
+      "median": 3.749437107879366,
+      "size": 122067
+    },
+    {
+      "model": "MoveNet_MultiPose",
+      "mean": 3.807833063817787,
+      "median": 2.2218914331276935,
+      "size": 121652
+    },
+    {
+      "model": "MoveNet_SP_Lightning",
+      "mean": 3.605888602927628,
+      "median": 2.2986219752574497,
+      "size": 86377
+    },
+    {
+      "model": "MoveNet_SP_Thunder",
+      "mean": 3.3105394244080797,
+      "median": 2.0869511194098727,
+      "size": 114940
+    },
+    {
+      "model": "YOLOv8_Medium",
+      "mean": 4.343191366931485,
+      "median": 2.412860123514201,
+      "size": 116732
+    },
+    {
+      "model": "YOLOv8_Nano",
+      "mean": 5.224996301993994,
+      "median": 2.589433640509142,
+      "size": 118260
+    },
+    {
+      "model": "YOLOv8_Small",
+      "mean": 4.964395939075001,
+      "median": 2.4231237627007505,
+      "size": 118637
+    }
+  ],
+  "per_region_main": [
+    {
+      "region": "shoulders",
+      "MediaPipe": 8.76228844493234,
+      "MoveNet": 10.292363398864591,
+      "YOLOv8": 10.206346964759703
+    },
+    {
+      "region": "elbows",
+      "MediaPipe": 11.242664166361413,
+      "MoveNet": 10.004785038901643,
+      "YOLOv8": 13.077620829009572
+    },
+    {
+      "region": "wrists",
+      "MediaPipe": 12.00689825249254,
+      "MoveNet": 11.842395452176135,
+      "YOLOv8": 16.24730095275871
+    },
+    {
+      "region": "hips",
+      "MediaPipe": 16.724720944438673,
+      "MoveNet": 11.279533657765656,
+      "YOLOv8": 14.592048294680907
+    },
+    {
+      "region": "knees",
+      "MediaPipe": 9.917150567228685,
+      "MoveNet": 7.756522592533482,
+      "YOLOv8": 9.87165481935597
+    },
+    {
+      "region": "ankles",
+      "MediaPipe": 14.588563489159728,
+      "MoveNet": 11.405701547760984,
+      "YOLOv8": 12.585879941734852
+    }
+  ],
+  "hip_sensitivity": {
+    "source_results": "C:\\Users\\Eren\\bachelor\\evaluation_v2\\results\\rehab24_all\\frame_results_all.csv",
+    "subset": "valid = no detection failure, no outlier, no mocap error",
+    "models_all_variants": [
+      {
+        "model": "MoveNet_MultiPose",
+        "all_12_mean": 10.516326715568798,
+        "hips_only_mean": 11.289264505899354,
+        "without_hips_mean": 10.456305050480553,
+        "hip_minus_all": 0.7729377903305554,
+        "all_minus_without_hips": 0.0600216650882448
+      },
+      {
+        "model": "YOLOv8_Medium",
+        "all_12_mean": 10.85754813620686,
+        "hips_only_mean": 14.178040993660309,
+        "without_hips_mean": 10.188832763568142,
+        "hip_minus_all": 3.3204928574534485,
+        "all_minus_without_hips": 0.6687153726387187
+      },
+      {
+        "model": "YOLOv8_Small",
+        "all_12_mean": 11.433383981096162,
+        "hips_only_mean": 14.114453728282173,
+        "without_hips_mean": 10.908879164783412,
+        "hip_minus_all": 2.6810697471860117,
+        "all_minus_without_hips": 0.5245048163127493
+      },
+      {
+        "model": "MediaPipe_Heavy",
+        "all_12_mean": 11.513732980600059,
+        "hips_only_mean": 16.156939429647302,
+        "without_hips_mean": 10.470166025870041,
+        "hip_minus_all": 4.643206449047243,
+        "all_minus_without_hips": 1.043566954730018
+      },
+      {
+        "model": "MediaPipe_Full",
+        "all_12_mean": 12.528106602630674,
+        "hips_only_mean": 16.72513139718828,
+        "without_hips_mean": 11.663541689869955,
+        "hip_minus_all": 4.197024794557608,
+        "all_minus_without_hips": 0.8645649127607182
+      },
+      {
+        "model": "YOLOv8_Nano",
+        "all_12_mean": 12.766196325555258,
+        "hips_only_mean": 14.59204829468091,
+        "without_hips_mean": 12.441551654893397,
+        "hip_minus_all": 1.825851969125651,
+        "all_minus_without_hips": 0.3246446706618613
+      },
+      {
+        "model": "MoveNet_SP_Thunder",
+        "all_12_mean": 13.32517788163879,
+        "hips_only_mean": 16.25807399466837,
+        "without_hips_mean": 12.349077770395292,
+        "hip_minus_all": 2.932896113029578,
+        "all_minus_without_hips": 0.9761001112434986
+      },
+      {
+        "model": "MediaPipe_Lite",
+        "all_12_mean": 13.54196350188048,
+        "hips_only_mean": 15.92999442237884,
+        "without_hips_mean": 13.147443749431643,
+        "hip_minus_all": 2.3880309204983607,
+        "all_minus_without_hips": 0.3945197524488364
+      },
+      {
+        "model": "MoveNet_SP_Lightning",
+        "all_12_mean": 14.972331397938998,
+        "hips_only_mean": 18.450511431116418,
+        "without_hips_mean": 13.61227105500902,
+        "hip_minus_all": 3.47818003317742,
+        "all_minus_without_hips": 1.3600603429299785
+      }
+    ],
+    "main_models_and_gap": [
+      {
+        "model": "MoveNet_MultiPose",
+        "all_12_mean": 10.516326715568798,
+        "hips_only_mean": 11.289264505899354,
+        "without_hips_mean": 10.456305050480553,
+        "hip_minus_all": 0.7729377903305554,
+        "all_minus_without_hips": 0.0600216650882448
+      },
+      {
+        "model": "MediaPipe_Full",
+        "all_12_mean": 12.528106602630674,
+        "hips_only_mean": 16.72513139718828,
+        "without_hips_mean": 11.663541689869955,
+        "hip_minus_all": 4.197024794557608,
+        "all_minus_without_hips": 0.8645649127607182
+      },
+      {
+        "model": "YOLOv8_Nano",
+        "all_12_mean": 12.766196325555258,
+        "hips_only_mean": 14.59204829468091,
+        "without_hips_mean": 12.441551654893397,
+        "hip_minus_all": 1.825851969125651,
+        "all_minus_without_hips": 0.3246446706618613
+      }
+    ]
+  },
+  "variant_accuracy_rehab": [
+    {
+      "model": "MediaPipe_Full",
+      "mean": 12.528106602630674,
+      "median": 11.25619008059946,
+      "size": 119729
+    },
+    {
+      "model": "MediaPipe_Heavy",
+      "mean": 11.513732980600059,
+      "median": 10.585991099657754,
+      "size": 119630
+    },
+    {
+      "model": "MediaPipe_Lite",
+      "mean": 13.54196350188048,
+      "median": 11.765545851094346,
+      "size": 119392
+    },
+    {
+      "model": "MoveNet_MultiPose",
+      "mean": 10.516326715568798,
+      "median": 9.850278436542323,
+      "size": 119439
+    },
+    {
+      "model": "MoveNet_SP_Lightning",
+      "mean": 14.972331397938998,
+      "median": 12.826043630530725,
+      "size": 94395
+    },
+    {
+      "model": "MoveNet_SP_Thunder",
+      "mean": 13.32517788163879,
+      "median": 11.933149264108222,
+      "size": 117719
+    },
+    {
+      "model": "YOLOv8_Medium",
+      "mean": 10.85754813620686,
+      "median": 10.013969836724607,
+      "size": 114591
+    },
+    {
+      "model": "YOLOv8_Nano",
+      "mean": 12.766196325555258,
+      "median": 11.22688239195844,
+      "size": 115711
+    },
+    {
+      "model": "YOLOv8_Small",
+      "mean": 11.433383981096162,
+      "median": 10.26943521320385,
+      "size": 116009
+    }
+  ],
+  "variant_accuracy_coco_all": [
+    {
+      "model": "MediaPipe",
+      "mean": 17.205292586478343,
+      "median": 10.52118810863352,
+      "size": 1101
+    },
+    {
+      "model": "MediaPipe_Heavy",
+      "mean": 15.078486901375642,
+      "median": 8.715937626545125,
+      "size": 1133
+    },
+    {
+      "model": "MediaPipe_Lite",
+      "mean": 20.067869619432127,
+      "median": 12.8293829442627,
+      "size": 1108
+    },
+    {
+      "model": "MoveNet",
+      "mean": 12.439520477496504,
+      "median": 8.714189733830226,
+      "size": 1213
+    },
+    {
+      "model": "MoveNet_SP_Lightning",
+      "mean": 12.625362661438682,
+      "median": 8.491107639548003,
+      "size": 821
+    },
+    {
+      "model": "MoveNet_SP_Thunder",
+      "mean": 12.007282340501861,
+      "median": 7.999792295826673,
+      "size": 1087
+    },
+    {
+      "model": "YOLOv8",
+      "mean": 13.688015214577696,
+      "median": 10.058458057379669,
+      "size": 1318
+    },
+    {
+      "model": "YOLOv8m",
+      "mean": 10.149702727719777,
+      "median": 7.633964599933011,
+      "size": 1326
+    },
+    {
+      "model": "YOLOv8s",
+      "mean": 10.880735243161212,
+      "median": 8.098981444463869,
+      "size": 1319
+    }
+  ],
+  "variant_accuracy_coco_single": [
+    {
+      "model": "MediaPipe",
+      "mean": 16.729485401247967,
+      "median": 10.17992963746254,
+      "size": 539
+    },
+    {
+      "model": "MediaPipe_Heavy",
+      "mean": 14.502633546201224,
+      "median": 8.556407010734398,
+      "size": 547
+    },
+    {
+      "model": "MediaPipe_Lite",
+      "mean": 19.32860603918173,
+      "median": 12.315313280273177,
+      "size": 533
+    },
+    {
+      "model": "MoveNet",
+      "mean": 12.54741966065847,
+      "median": 8.717188289358784,
+      "size": 592
+    },
+    {
+      "model": "MoveNet_SP_Lightning",
+      "mean": 12.612599463902024,
+      "median": 9.134003790139648,
+      "size": 451
+    },
+    {
+      "model": "MoveNet_SP_Thunder",
+      "mean": 11.842970490750295,
+      "median": 7.773632780305849,
+      "size": 546
+    },
+    {
+      "model": "YOLOv8",
+      "mean": 14.872623791130984,
+      "median": 10.270854004115016,
+      "size": 630
+    },
+    {
+      "model": "YOLOv8m",
+      "mean": 10.526563893912966,
+      "median": 7.832871971488647,
+      "size": 637
+    },
+    {
+      "model": "YOLOv8s",
+      "mean": 11.743044818624256,
+      "median": 8.368581730865888,
+      "size": 635
+    }
+  ],
+  "inference_all_models": [
+    {
+      "model": "MoveNet_SP_Lightning",
+      "total_frames": 1500,
+      "mean_ms": 9.93849866751892,
+      "std_ms": 0.8098068886398745,
+      "median_ms": 9.849750029388815,
+      "min_ms": 8.731700014322996,
+      "max_ms": 27.828000020235777,
+      "p95_ms": 10.876274935435504,
+      "p99_ms": 11.839121037628502,
+      "fps": 100.6188191450091,
+      "source": "evaluation_v2/benchmark_variant_inference.py"
+    },
+    {
+      "model": "MoveNet_MultiPose",
+      "total_frames": 1500,
+      "mean_ms": 36.09440800001903,
+      "std_ms": 5.4667445647436566,
+      "median_ms": 34.848800001782365,
+      "min_ms": 28.70200000324985,
+      "max_ms": 90.73080000234768,
+      "p95_ms": 45.78047500217507,
+      "p99_ms": 57.57617300201673,
+      "fps": 27.70512263283201,
+      "source": "analysis/results/inference_benchmark.csv"
+    },
+    {
+      "model": "MoveNet_SP_Thunder",
+      "total_frames": 1500,
+      "mean_ms": 36.22150540049188,
+      "std_ms": 2.0771487674844766,
+      "median_ms": 35.99089995259419,
+      "min_ms": 33.123399945907295,
+      "max_ms": 76.06099999975413,
+      "p95_ms": 38.14921001903713,
+      "p99_ms": 41.661787000484765,
+      "fps": 27.60790831146461,
+      "source": "evaluation_v2/benchmark_variant_inference.py"
+    },
+    {
+      "model": "MediaPipe_Lite",
+      "total_frames": 1500,
+      "mean_ms": 45.730728067224845,
+      "std_ms": 14.57058181048022,
+      "median_ms": 42.23034996539354,
+      "min_ms": 26.00269997492433,
+      "max_ms": 89.84499995131046,
+      "p95_ms": 70.94257000717334,
+      "p99_ms": 74.3683620262891,
+      "fps": 21.86713490609608,
+      "source": "evaluation_v2/benchmark_variant_inference.py"
+    },
+    {
+      "model": "YOLOv8_Nano",
+      "total_frames": 1500,
+      "mean_ms": 52.86806153333358,
+      "std_ms": 8.3434227811427,
+      "median_ms": 51.09760000050301,
+      "min_ms": 46.0116999965976,
+      "max_ms": 122.93650000356138,
+      "p95_ms": 60.33621999376919,
+      "p99_ms": 108.47568800585576,
+      "fps": 18.915011653481844,
+      "source": "analysis/results/inference_benchmark.csv"
+    },
+    {
+      "model": "MediaPipe_Full",
+      "total_frames": 1500,
+      "mean_ms": 67.90116906662297,
+      "std_ms": 27.37188162321192,
+      "median_ms": 63.99340000280063,
+      "min_ms": 31.134300006669942,
+      "max_ms": 187.6371999969706,
+      "p95_ms": 116.08289000178048,
+      "p99_ms": 140.88336899745627,
+      "fps": 14.727286934026488,
+      "source": "analysis/results/inference_benchmark.csv"
+    },
+    {
+      "model": "YOLOv8_Small",
+      "total_frames": 1500,
+      "mean_ms": 97.14984133125591,
+      "std_ms": 10.634148511554878,
+      "median_ms": 93.8670999603346,
+      "min_ms": 88.27890001703054,
+      "max_ms": 269.5421000244096,
+      "p95_ms": 107.4643000611104,
+      "p99_ms": 125.35647893440908,
+      "fps": 10.29337759379614,
+      "source": "evaluation_v2/benchmark_variant_inference.py"
+    },
+    {
+      "model": "MediaPipe_Heavy",
+      "total_frames": 1500,
+      "mean_ms": 165.33565506665036,
+      "std_ms": 79.54266124163617,
+      "median_ms": 135.29050000943244,
+      "min_ms": 68.70410009287298,
+      "max_ms": 373.0366000672802,
+      "p95_ms": 304.06129499315284,
+      "p99_ms": 320.42701691621915,
+      "fps": 6.048302162028381,
+      "source": "evaluation_v2/benchmark_variant_inference.py"
+    },
+    {
+      "model": "YOLOv8_Medium",
+      "total_frames": 1500,
+      "mean_ms": 215.39552886613333,
+      "std_ms": 33.53328666887596,
+      "median_ms": 211.0834499471821,
+      "min_ms": 190.2771999593824,
+      "max_ms": 873.5129999695346,
+      "p95_ms": 246.2597400008235,
+      "p99_ms": 327.6561030140146,
+      "fps": 4.642621902432768,
+      "source": "evaluation_v2/benchmark_variant_inference.py"
+    }
+  ]
+}

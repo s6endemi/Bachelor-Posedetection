@@ -72,3 +72,48 @@ logs/
 .env
 *.env
 models/
+
+# === Bachelorarbeit: Ergaenzungen ===
+
+# Archive / Downloads (zu gross fuer Git)
+*.zip
+annotations_trainval2017.zip
+
+# Datensaetze & Caches (nicht versionieren)
+data/coco/
+data/predictions_variants/
+.tfhub_cache/
+
+# Evaluation: riesige Roh-Ergebnis-CSVs (>100 MB, GitHub blockt diese)
+evaluation_v2/results/rehab24_all/
+evaluation_v2/results/rehab24/frame_results.csv
+evaluation_v2/results/rehab24/jitter_results.csv
+
+# Thesis: aeltere/duplizierte Build-Ordner (kanonisch ist thesis/)
+thesis_buildcheck/
+thesis_overleaf/
+
+# LaTeX Build-Artefakte (master.pdf wird bewusst behalten)
+*.aux
+*.bbl
+*.bcf
+*.blg
+*.fdb_latexmk
+*.fls
+*.lof
+*.lot
+*.toc
+*.out
+*.run.xml
+*.synctex.gz
+compile_out.txt
+
+# Interne Arbeits-/Scaffolding-Notizen (bleiben lokal)
+HANDOFF_*.md
+THESIS_CRITERIA.md
+WRITING_GUIDE.md
+
+# Temporaere Dateien
+tmp_*
+tmp_pages/
+tmpclaude-*

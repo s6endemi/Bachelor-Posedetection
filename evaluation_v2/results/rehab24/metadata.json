@@ -1,0 +1,20 @@
+{
+  "dataset": "REHAB24-6",
+  "timestamp": "2026-04-03T18:57:32.511905",
+  "eval_config": {
+    "joint_confidence_threshold": 0.5,
+    "outlier_nmpjpe_threshold": 100.0,
+    "frame_step": 3,
+    "c17_frontal_offset": 65.0,
+    "rotation_bin_size": 10,
+    "multi_person_severity_threshold": 2
+  },
+  "n_videos": 126,
+  "n_frames_total": 367200,
+  "n_models": 3,
+  "models": [
+    "MediaPipe",
+    "MoveNet",
+    "YOLOv8"
+  ]
+}

@@ -1,0 +1,53 @@
+% =============================================================================
+\chapter{Supplementary Data}
+\label{app:supplementary}
+% =============================================================================
+
+% -----------------------------------------------------------------------------
+\section{Per-Exercise Accuracy}
+\label{app:per-exercise}
+% -----------------------------------------------------------------------------
+
+Table~\ref{tab:per-exercise-nmpjpe} reports mean NMPJPE per exercise and per main model on the REHAB24-6 valid subset. MoveNet ranks first on all six exercises; the MediaPipe--YOLOv8 ordering varies by exercise.
+
+\begin{table}[htbp]
+  \centering
+  \caption{Mean NMPJPE (\%) on the REHAB24-6 valid subset, per exercise and per main model. Bold marks the lowest error per row.}
+  \label{tab:per-exercise-nmpjpe}
+  \begin{tabular}{lccc}
+    \toprule
+    Exercise & MediaPipe & MoveNet & YOLOv8 \\
+    \midrule
+    Ex1 & 12.12 & \textbf{9.95}  & 10.57 \\
+    Ex2 & 11.66 & \textbf{9.00}  & 11.07 \\
+    Ex3 & 14.91 & \textbf{13.80} & 16.73 \\
+    Ex4 & 12.32 & \textbf{11.39} & 13.62 \\
+    Ex5 & 14.13 & \textbf{11.43} & 16.24 \\
+    Ex6 & 11.89 & \textbf{10.10} & 12.23 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+% -----------------------------------------------------------------------------
+\section{Failure-Mode Counts}
+\label{app:failure-mode-counts}
+% -----------------------------------------------------------------------------
+
+Table~\ref{tab:failure-mode-counts} reports the exact counts per failure category that underlie the distributions in Section~\ref{sec:failure-modes}. Percentages in parentheses are shares of each model's total failures.
+
+\begin{table}[htbp]
+  \centering
+  \caption{Failure-mode counts on REHAB24-6 for the three main models. Bold marks the dominant category per model.}
+  \label{tab:failure-mode-counts}
+  \small
+  \setlength{\tabcolsep}{4pt}
+  \begin{tabular}{lccccc}
+    \toprule
+    Model & Failures & Miss.-Det. & Conf.-Coll. & Multi-Pers. & Kp.-Displ. \\
+    \midrule
+    MediaPipe & 1{,}583 (1.29\%) & 177 (11.2\%) & 135 (8.5\%) & 169 (10.7\%) & \textbf{1{,}102 (69.6\%)} \\
+    MoveNet   & 1{,}875 (1.53\%) & 369 (19.7\%) & \textbf{964 (51.4\%)} & 38 (2.0\%) & 504 (26.9\%) \\
+    YOLOv8    & 5{,}610 (4.58\%) & \textbf{3{,}580 (63.8\%)} & 779 (13.9\%) & 42 (0.7\%) & 1{,}209 (21.6\%) \\
+    \bottomrule
+  \end{tabular}
+\end{table}

@@ -1,0 +1,13 @@
+=== REHAB24-6 Variant Inference: YOLOv8m ===
+  Output: C:\Users\Eren\bachelor\data\predictions_variants\YOLOv8m
+  Videos: 126
+  Loading YOLOv8m...
+  Model loaded.
+
+Traceback (most recent call last):
+  File "C:\Users\Eren\bachelor\evaluation_v2\rehab_variant_inference.py", line 241, in <module>
+    main()
+  File "C:\Users\Eren\bachelor\evaluation_v2\rehab_variant_inference.py", line 222, in main
+    vps = (i + 1) / elapsed
+          ~~~~~~~~^~~~~~~~~
+ZeroDivisionError: float division by zero

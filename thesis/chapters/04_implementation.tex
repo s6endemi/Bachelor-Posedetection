@@ -1,0 +1,31 @@
+% =============================================================================
+\chapter{Implementation}
+\label{ch:implementation}
+% =============================================================================
+
+The implementation separates expensive model inference from downstream metric computation so that filtering, aggregation, or statistical choices can be revised without repeating inference.
+
+% -----------------------------------------------------------------------------
+\section{Pipeline Overview}
+\label{sec:architecture}
+% -----------------------------------------------------------------------------
+
+The evaluation uses a two-phase architecture. Phase~1 runs inference once per model on all REHAB24-6 recordings and on the COCO val2017 subset, storing per-frame keypoint predictions and confidence values as compressed \texttt{.npz} arrays. Phase~2 loads these predictions together with the matching ground truth, applies the filtering rules defined in Chapter~\ref{ch:methodology}, and computes all reported metrics and statistical tests. Figures and tables read exclusively from the Phase~2 CSV and JSON artifacts, which keeps each reported number traceable to a single canonical source.
+
+All nine evaluated configurations---the three main models and the six family variants---share the same Phase~1 and Phase~2 code. Each variant plugs into the same estimator interface; model weights, keypoint counts, and person outputs differ, but the downstream code does not branch on model type.
+
+% -----------------------------------------------------------------------------
+\section{Model Estimator Interface}
+\label{sec:model-abstraction}
+% -----------------------------------------------------------------------------
+
+The three model families expose fundamentally different APIs: MediaPipe uses its Tasks API, MoveNet runs through TensorFlow Hub with manual padding and unpadding of the input tensor, and YOLOv8 uses the Ultralytics runtime. A common abstract \texttt{PoseEstimator} base class wraps these APIs so that Phase~1 can iterate over frames and models uniformly. Each concrete estimator loads its own weights, returns native candidate detections for the current frame, and converts native keypoint formats to the shared COCO index space. The evaluation pipeline then applies the corresponding person-selection logic (Section~\ref{sec:person-selection}) consistently across models before downstream metric computation. The abstraction is deliberately thin: it hides format differences but leaves evaluation logic, including selection, in Phase~2.
+
+% -----------------------------------------------------------------------------
+\section{Data Artifacts and Reproducibility}
+\label{sec:data-flow}
+% -----------------------------------------------------------------------------
+
+Phase~1 stores predictions per model and per recording in a normalized \texttt{.npz} format used by Phase~2. The stored array has shape $(N, 17, 3)$ in the shared COCO index space, where $N$ is the number of sampled frames for the recording, together with a length-$N$ array of camera-relative rotation angles. Native outputs with different keypoint counts or coordinate conventions (in particular MediaPipe's 33 landmarks) are mapped into this shared format by the estimator before writing. Phase~2 produces the result artifacts used throughout Chapters~\ref{ch:results} and~\ref{ch:discussion}: per-frame evaluation tables, subject-level cluster statistics with permutation-based $p$-values and bootstrap confidence intervals, frame-to-frame prediction-displacement tables, coach-scene detection counts, hip-sensitivity tables, and the CPU inference benchmark.
+
+Every headline number in the thesis is traceable to one of these artifacts; a separate provenance file maps each reported value to its source file. The inference benchmark runs in a dedicated sequential script with high-resolution timers and a fixed per-model sample budget, isolated from the main pipeline to avoid resource contention. Model weights are downloaded on first use, and Phase~2 is deterministic on the stored \texttt{.npz} files: given the same predictions and the same filtering and statistical settings, re-running Phase~2 reproduces the reported metrics exactly. Determinism across different Phase~1 runtimes is not separately guaranteed.

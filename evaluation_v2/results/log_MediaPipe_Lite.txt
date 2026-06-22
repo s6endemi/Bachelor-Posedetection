@@ -1,0 +1,32 @@
+2026-04-04 12:57:18.624985: I tensorflow/core/util/port.cc:153] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+2026-04-04 12:57:21.839060: I tensorflow/core/util/port.cc:153] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+C:\Users\Eren\bachelor\.venv\Lib\site-packages\keras\src\export\tf2onnx_lib.py:8: FutureWarning: In the future `np.object` will be defined as the corresponding NumPy scalar.
+  if not hasattr(np, "object"):
+INFO: Created TensorFlow Lite XNNPACK delegate for CPU.
+W0000 00:00:1775300244.819467   14500 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1775300244.848912    8136 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1775300244.918351   14500 landmark_projection_calculator.cc:81] Using NORM_RECT without IMAGE_DIMENSIONS is only supported for the square ROI. Provide IMAGE_DIMENSIONS or use PROJECTION_MATRIX.
+=== REHAB24-6 Variant Inference: MediaPipe_Lite ===
+  Output: C:\Users\Eren\bachelor\data\predictions_variants\MediaPipe_Lite
+  Videos: 126
+  Loading MediaPipe_Lite...
+  Model loaded.
+
+  [10/126] PM_016-c18 -> ok, 681 frames, 21.4 FPS, ETA 150min
+  [20/126] PM_101-c18 -> ok, 436 frames, 13.1 FPS, ETA 152min
+  [30/126] PM_004-c18 -> ok, 973 frames, 19.5 FPS, ETA 218min
+  [40/126] PM_033-c18 -> ok, 1292 frames, 21.1 FPS, ETA 192min
+  [50/126] PM_123-c18 -> ok, 1462 frames, 20.9 FPS, ETA 176min
+  [60/126] PM_044-c18 -> ok, 538 frames, 20.8 FPS, ETA 142min
+  [70/126] PM_121-c18 -> ok, 569 frames, 20.8 FPS, ETA 111min
+  [80/126] PM_027-c18 -> ok, 1369 frames, 21.0 FPS, ETA 87min
+  [90/126] PM_111-c18 -> ok, 1197 frames, 10.9 FPS, ETA 67min
+  [100/126] PM_037-c18 -> ok, 749 frames, 9.4 FPS, ETA 52min
+  [110/126] PM_008-c18 -> ok, 1731 frames, 21.8 FPS, ETA 32min
+  [120/126] PM_105-c18 -> ok, 1096 frames, 23.4 FPS, ETA 12min
+  [126/126] PM_126-c18 -> ok, 1134 frames, 23.5 FPS, ETA 0min
+
+=== Done: MediaPipe_Lite ===
+  Total: 122,400 frames in 249.0 min
+  Speed: 18.8 FPS (mean)
+  Output: C:\Users\Eren\bachelor\data\predictions_variants\MediaPipe_Lite

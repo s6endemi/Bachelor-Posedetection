@@ -1,0 +1,8 @@
+=== REHAB24-6 Variant Inference: YOLOv8m ===
+  Output: C:\Users\Eren\bachelor\data\predictions_variants\YOLOv8m
+  Videos: 126
+  Loading YOLOv8m...
+  Model loaded.
+
+  [10/126] PM_016-c18 -> skipped, 0 frames, N/A, ETA 0min
+  [20/126] PM_101-c18 -> ok, 436 frames, 5.0 FPS, ETA 146min

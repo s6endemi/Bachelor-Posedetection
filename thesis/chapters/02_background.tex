@@ -1,0 +1,146 @@
+% =============================================================================
+\chapter{Background and Related Work}
+\label{ch:background}
+% =============================================================================
+
+Three areas are relevant for this thesis: architectural paradigms, accuracy and temporal-stability metrics, and rehabilitation-oriented prior work. This chapter reviews each and positions the research gap.
+
+
+% -----------------------------------------------------------------------------
+\section{Human Pose Estimation}
+\label{sec:hpe-fundamentals}
+% -----------------------------------------------------------------------------
+
+Human pose estimation (HPE) localizes anatomical keypoints---joints and body landmarks---from visual input~\cite{zheng2023deep}. For this thesis, two distinctions are useful: keypoint-based methods versus mesh-based methods~\cite{gao2025systematic}, and 2D image-coordinate prediction versus 3D world-coordinate estimation. Mobile rehabilitation systems typically favor lightweight keypoint-based models, and this evaluation is strictly 2D, comparing predictions against projected motion-capture ground truth.
+
+For rehabilitation, markerless HPE can support movement analysis without the cost and setup effort of marker-based systems~\cite{hellsten2021potential, debnath2022review}. The reliability of current mobile models under rehabilitation-oriented conditions remains insufficiently characterized.
+
+
+% -----------------------------------------------------------------------------
+\section{Architectural Paradigms}
+\label{sec:architectures}
+% -----------------------------------------------------------------------------
+
+The model comparison in this thesis is organized around three common architectural paradigms in modern HPE~\cite{zheng2023deep}.
+
+\paragraph{Top-down approaches} first localize persons through bounding boxes or region proposals and then estimate pose within each detected region~\cite{toshev2014deeppose, newell2016stacked, xiao2018simple, sun2019hrnet}. Their cost scales with the number of detected persons, and their accuracy depends on the reliability of the upstream detector.
+
+\paragraph{Bottom-up approaches} detect keypoints for the full image in one pass and then group them into individual persons. OpenPose~\cite{cao2019openpose} is the canonical representative. Bottom-up methods have a fixed computational cost with respect to person count, which is attractive for multi-person scenes. Their accuracy depends on the robustness of the grouping step, especially when keypoints from different persons are spatially close.
+
+\paragraph{One-stage approaches} combine person detection and keypoint estimation in a single forward pass, typically by extending an object detector with a pose head. This often yields a favorable speed--accuracy trade-off for real-time use. A recent example is YOLOv8-Pose~\cite{jocher2023yolov8}.
+
+The three evaluated model families span all three paradigms: MediaPipe is top-down, MoveNet is bottom-up, and YOLOv8-Pose is one-stage.
+
+
+% -----------------------------------------------------------------------------
+\section{Evaluated Models and Variants}
+\label{sec:models}
+% -----------------------------------------------------------------------------
+
+The evaluation focuses on three main models---one from each architectural paradigm---and adds six family variants to examine speed--accuracy trade-offs within each family. All configurations target mobile or edge deployment.
+
+\subsection{MediaPipe Pose (BlazePose)}
+\label{sec:mediapipe}
+
+MediaPipe Pose~\cite{bazarevsky2020blazepose} is a top-down pose estimation model developed within the MediaPipe framework~\cite{lugaresi2019mediapipe}. It predicts 33 pose landmarks per detected person, including additional facial and distal-extremity landmarks beyond the 17~COCO keypoints used by MoveNet and YOLOv8-Pose. Three variants are available---Lite, Full, and Heavy---offering different accuracy--speed trade-offs under the same TFLite runtime.
+
+\subsection{MoveNet}
+\label{sec:movenet}
+
+MoveNet~\cite{google2021movenet} is a lightweight pose estimation model optimized for real-time inference on mobile and edge devices. It predicts the 17~COCO body keypoints and is available in both single-person and multi-person configurations. The MultiPose Lightning variant is used as the main MoveNet configuration because it exposes up to six persons per frame together with per-person bounding boxes; the family analysis additionally includes the SinglePose Lightning and SinglePose Thunder variants.
+
+\subsection{YOLOv8-Pose}
+\label{sec:yolo}
+
+YOLOv8-Pose~\cite{jocher2023yolov8} extends the YOLO object detection framework with a pose estimation head, producing bounding boxes and 17~COCO keypoints in a single forward pass. The Nano variant is used as the main configuration because it is the mobile-oriented entry point; the Small and Medium variants are additionally included for family-level speed--accuracy characterization. Unlike the TFLite-based MediaPipe and MoveNet pipelines, YOLOv8-Pose uses the Ultralytics PyTorch runtime.
+
+
+% -----------------------------------------------------------------------------
+\section{Evaluation Metrics and Benchmarks}
+\label{sec:evaluation-metrics}
+% -----------------------------------------------------------------------------
+
+This thesis uses NMPJPE as its primary accuracy metric and normalized frame-to-frame prediction displacement as its primary stability proxy.
+
+\paragraph{Metrics.} The most common evaluation metrics are:
+\begin{itemize}
+  \item \textbf{Percentage of Correct Keypoints (PCK):} the fraction of predicted keypoints within a threshold distance of the ground truth, typically normalized by head size or torso length~\cite{andriluka2014mpii}.
+  \item \textbf{Object Keypoint Similarity (OKS):} a per-keypoint similarity score with keypoint-specific tolerances, used as the primary metric in the COCO benchmark~\cite{lin2014coco}.
+  \item \textbf{Mean Per Joint Position Error (MPJPE):} the mean Euclidean distance between predicted and ground-truth keypoint positions, usually reported in pixels or millimeters~\cite{ionescu2014human36m}.
+  \item \textbf{Normalized MPJPE (NMPJPE):} MPJPE normalized by a reference body segment length. This thesis uses NMPJPE as its primary accuracy metric (Section~\ref{sec:nmpjpe}) because it provides a scale-normalized error on the shared 12-joint skeleton.
+\end{itemize}
+
+Video-based deployment also requires temporal stability~\cite{zeng2022smoothnet}. This thesis therefore adds a frame-to-frame prediction-displacement metric, normalized by a reference body segment, to compare the movement of unsmoothed predicted trajectories.
+
+\paragraph{Standard benchmarks.} COCO Keypoint Detection~\cite{lin2014coco} and MPII Human Pose~\cite{andriluka2014mpii} dominate 2D HPE evaluation. For controlled 3D evaluation, Human3.6M~\cite{ionescu2014human36m} remains the canonical motion-capture benchmark.
+
+\paragraph{Limitations for rehabilitation-oriented deployment.} Standard benchmarks do not combine fixed-camera exercise recordings, repeated recordings per subject, multi-person interference requiring target-subject retention, and explicit temporal-stability analysis on video. This is why the thesis uses a rehabilitation-oriented proxy benchmark.
+
+
+% -----------------------------------------------------------------------------
+\section{Related Work}
+\label{sec:related-work}
+% -----------------------------------------------------------------------------
+
+The related work below focuses on rehabilitation relevance, viewpoint sensitivity, and mobile-model comparison.
+
+\subsection{HPE in Rehabilitation}
+\label{sec:rw-rehabilitation}
+
+Debnath et al.~\cite{debnath2022review} survey computer-vision-based rehabilitation assessment and identify the scarcity of suitable public rehabilitation datasets as a central bottleneck. \v{C}ernek et al.~\cite{cernek2025rehab246} introduce REHAB24-6 and evaluate selected pose-estimation methods on it, including MediaPipe and several YOLOv8-Pose variants, but not MoveNet, normalized frame-to-frame prediction displacement, coach-scene failure behavior, or the combined multi-person decomposition used here. Rode et al.~\cite{rode2025assessment} evaluate a broader set of models for clinical movement analysis, but emphasize per-joint accuracy rather than multi-person behavior, temporal prediction-displacement behavior, or cross-dataset transferability. Ullah et al.~\cite{ullah2025realtime} present a MediaPipe-based physiotherapy scoring system as an application case rather than a comparative model study.
+
+
+\subsection{Viewpoint Effects on HPE}
+\label{sec:rw-viewpoint}
+
+Aguilar-Ortega et al.~\cite{aguilarortega2023uco} present the UCO Physical Rehabilitation dataset with multiple camera viewpoints and report a substantial increase in mean error from frontal to lateral views, but use server-grade rather than mobile-optimized models. Baldinger et al.~\cite{baldinger2025viewing} investigate four camera viewing angles for OpenPose during lunge exercises and report higher errors under lateral viewpoints. Together, these studies establish that viewpoint affects HPE accuracy, but none evaluates mobile-optimized models on a rehabilitation-oriented benchmark with a matched viewpoint analysis.
+
+
+\subsection{Mobile HPE Comparisons}
+\label{sec:rw-mobile}
+
+Several studies compare mobile-optimized HPE models, usually on standard benchmarks rather than rehabilitation-oriented data. Jo and Kim~\cite{jo2022comparative} compare OpenPose, PoseNet, and MoveNet on mobile devices, and Chung et al.~\cite{chung2022comparative} provide a broader comparison with a similar emphasis on computational efficiency. Roggio et al.~\cite{roggio2024comprehensive} review machine-learning pose-estimation models and consider MediaPipe and MoveNet suitable for remote fitness and rehabilitation applications, but do not quantify degradation under occlusion or crowded scenes. Hii et al.~\cite{hii2023gait} validate MediaPipe for automated gait analysis without comparing it against alternative mobile models.
+
+These studies provide useful reference points, but they do not combine rehabilitation-oriented data, temporal stability, and explicit target-subject selection behavior in multi-person scenes.
+
+
+% -----------------------------------------------------------------------------
+\section{Research Gap}
+\label{sec:research-gap}
+% -----------------------------------------------------------------------------
+
+Table~\ref{tab:research-gap} summarizes how prior work covers the evaluation dimensions most relevant to mobile rehabilitation-oriented HPE.
+
+\begin{table}[htbp]
+  \centering
+  \footnotesize
+  \caption{Coverage of evaluation dimensions in related work. Checkmarks indicate that a study addresses the dimension; dashes indicate that it does not; ``Part.'' indicates partial coverage, for example a single model family, a restricted exercise set, or inference speed without accompanying deployment-oriented accuracy.}
+  \label{tab:research-gap}
+  \setlength{\tabcolsep}{4pt}
+  \begin{tabular}{p{3.3cm}ccccccc}
+    \toprule
+    Study & Mobile & Rehab & Viewpoint & Multi-person & Stability & Variants & Cross-dataset \\
+    \midrule
+    Aguilar-Ortega et al.~\cite{aguilarortega2023uco} & -- & \checkmark & \checkmark & -- & -- & -- & -- \\
+    Baldinger et al.~\cite{baldinger2025viewing}      & -- & -- & \checkmark & -- & -- & -- & -- \\
+    \v{C}ernek et al.~\cite{cernek2025rehab246}      & Part. & \checkmark & -- & -- & -- & Part. & -- \\
+    Rode et al.~\cite{rode2025assessment}             & Part. & \checkmark & -- & -- & -- & -- & -- \\
+    Jo \& Kim~\cite{jo2022comparative}                & \checkmark & -- & -- & -- & -- & -- & -- \\
+    Ullah et al.~\cite{ullah2025realtime}             & \checkmark & Part. & -- & -- & -- & -- & -- \\
+    \textbf{This work}                                & \checkmark & \checkmark & \checkmark & \checkmark & \checkmark & \checkmark & \checkmark \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+The literature leaves six gaps that are relevant for this thesis.
+
+\begin{enumerate}
+  \item \textbf{MoveNet is missing from rehabilitation-oriented benchmarks.} Neither \v{C}ernek et al.\ nor Rode et al.\ include MoveNet despite its relevance for mobile deployment.
+  \item \textbf{Temporal stability is rarely reported as a video metric.} Existing rehabilitation-oriented studies report per-frame accuracy and, at most, video-level averages, without measuring frame-to-frame prediction displacement.
+  \item \textbf{Multi-person behavior is treated as a single regime.} Multi-person scenes are recognized as difficult~\cite{roggio2024comprehensive}, but prior work does not decompose them into a segmentation-defined subset and a coach-scene extreme case, which capture different failure modes.
+  \item \textbf{Intra-family speed--accuracy trade-offs are only partially covered.} Prior work typically reports one variant per model family, so within-protocol comparisons across all three main families are not available.
+  \item \textbf{Cross-dataset transferability is often assumed rather than tested.} We found no study that directly compares ranking positions between a rehabilitation-oriented benchmark and a standard benchmark using a harmonized body-joint skeleton, even where the dataset-specific protocols differ.
+  \item \textbf{Repeated recordings per subject are rarely modeled at the inferential level.} Existing studies report frame-level or video-level summaries, so the dependency structure of repeated measurements is only partially addressed.
+\end{enumerate}
+
+This thesis addresses these gaps by combining a rehabilitation-oriented evaluation on REHAB24-6 with an auxiliary transferability comparison on COCO val2017 and by reporting the primary inferential results at subject-cluster level.

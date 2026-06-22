@@ -1,0 +1,348 @@
+{
+  "generated_from": {
+    "project_root": "C:\\Users\\Eren\\bachelor",
+    "rehab24_csv": "C:\\Users\\Eren\\bachelor\\evaluation_v2\\results\\rehab24\\frame_results.csv",
+    "rehab24_all_csv": "C:\\Users\\Eren\\bachelor\\evaluation_v2\\results\\rehab24_all\\frame_results_all.csv",
+    "coco_csv": "C:\\Users\\Eren\\bachelor\\evaluation_v2\\results\\coco\\coco_results.csv"
+  },
+  "subset_definitions": {
+    "clean": "No detection failure.",
+    "valid_rehab": "No detection failure, no >100% outlier, no MoCap annotation error.",
+    "valid_coco": "No detection failure, no >100% outlier.",
+    "coach_extreme_case": "5 identified coach videos on c17: PM_010, PM_011, PM_108, PM_119, PM_121.",
+    "segmentation_multi_person": "Rows with extra_person_severity >= 2."
+  },
+  "rehab24_main_models": {
+    "metadata": {
+      "dataset": "REHAB24-6",
+      "timestamp": "2026-04-03T18:57:32.511905",
+      "eval_config": {
+        "joint_confidence_threshold": 0.5,
+        "outlier_nmpjpe_threshold": 100.0,
+        "frame_step": 3,
+        "c17_frontal_offset": 65.0,
+        "rotation_bin_size": 10,
+        "multi_person_severity_threshold": 2
+      },
+      "n_videos": 126,
+      "n_frames_total": 367200,
+      "n_models": 3,
+      "models": [
+        "MediaPipe",
+        "MoveNet",
+        "YOLOv8"
+      ]
+    },
+    "clean_n_rows": 363074,
+    "valid_n_rows": 354879,
+    "n_video_exercise_pairs": 63,
+    "n_segmentation_person_clusters": 10,
+    "summary_valid": [
+      {
+        "model": "MoveNet",
+        "mean_nmpjpe": 10.516326715568798,
+        "median_nmpjpe": 9.850278436542323,
+        "std_nmpjpe": 4.659938247234305,
+        "n_frames": 119439
+      },
+      {
+        "model": "MediaPipe",
+        "mean_nmpjpe": 12.528106602630674,
+        "median_nmpjpe": 11.25619008059946,
+        "std_nmpjpe": 7.050054535452428,
+        "n_frames": 119729
+      },
+      {
+        "model": "YOLOv8",
+        "mean_nmpjpe": 12.766196325555258,
+        "median_nmpjpe": 11.22688239195844,
+        "std_nmpjpe": 6.725269775882775,
+        "n_frames": 115711
+      }
+    ],
+    "summary_coach_all": [
+      {
+        "model": "MediaPipe",
+        "mean_nmpjpe": 45.376378276157304,
+        "median_nmpjpe": 15.659830883672852,
+        "std_nmpjpe": 91.80236772685845,
+        "n_frames": 3919
+      },
+      {
+        "model": "MoveNet",
+        "mean_nmpjpe": 62.204716775327114,
+        "median_nmpjpe": 16.03052568611642,
+        "std_nmpjpe": 117.89987880017746,
+        "n_frames": 3910
+      },
+      {
+        "model": "YOLOv8",
+        "mean_nmpjpe": 66.00166388991411,
+        "median_nmpjpe": 22.115144659911543,
+        "std_nmpjpe": 115.31967239743612,
+        "n_frames": 3912
+      }
+    ],
+    "summary_coach_valid": [
+      {
+        "model": "MoveNet",
+        "mean_nmpjpe": 15.711713022251503,
+        "median_nmpjpe": 14.340416762388685,
+        "std_nmpjpe": 7.349778236085094,
+        "n_frames": 2972
+      },
+      {
+        "model": "MediaPipe",
+        "mean_nmpjpe": 16.552632628196218,
+        "median_nmpjpe": 14.481575203319633,
+        "std_nmpjpe": 8.990052875739114,
+        "n_frames": 3161
+      },
+      {
+        "model": "YOLOv8",
+        "mean_nmpjpe": 20.264180132154472,
+        "median_nmpjpe": 19.28288594996054,
+        "std_nmpjpe": 8.276928223747834,
+        "n_frames": 2968
+      }
+    ],
+    "summary_non_coach_all": [
+      {
+        "model": "MoveNet",
+        "mean_nmpjpe": 12.699781389347923,
+        "median_nmpjpe": 9.829929429471202,
+        "std_nmpjpe": 26.6392308891655,
+        "n_frames": 118121
+      },
+      {
+        "model": "MediaPipe",
+        "mean_nmpjpe": 14.386416499704476,
+        "median_nmpjpe": 11.243637208215764,
+        "std_nmpjpe": 23.044929502840652,
+        "n_frames": 118304
+      },
+      {
+        "model": "YOLOv8",
+        "mean_nmpjpe": 16.971163116870233,
+        "median_nmpjpe": 11.205673030900432,
+        "std_nmpjpe": 40.322575572139506,
+        "n_frames": 114908
+      }
+    ],
+    "summary_segmentation_multi_valid": [
+      {
+        "model": "MoveNet",
+        "mean_nmpjpe": 10.03849388284212,
+        "median_nmpjpe": 9.432061786402794,
+        "std_nmpjpe": 3.9082878767763303,
+        "n_frames": 10703
+      },
+      {
+        "model": "YOLOv8",
+        "mean_nmpjpe": 12.247428385994326,
+        "median_nmpjpe": 10.798943175588168,
+        "std_nmpjpe": 5.597709381246864,
+        "n_frames": 10286
+      },
+      {
+        "model": "MediaPipe",
+        "mean_nmpjpe": 12.670522856695134,
+        "median_nmpjpe": 10.94790387927993,
+        "std_nmpjpe": 7.117517181212895,
+        "n_frames": 10596
+      }
+    ]
+  },
+  "rehab24_all_variants": {
+    "metadata": {
+      "dataset": "REHAB24-6",
+      "timestamp": "2026-04-05T22:46:57.646256",
+      "eval_config": {
+        "joint_confidence_threshold": 0.5,
+        "outlier_nmpjpe_threshold": 100.0,
+        "frame_step": 3,
+        "c17_frontal_offset": 65.0,
+        "rotation_bin_size": 10,
+        "multi_person_severity_threshold": 2
+      },
+      "n_videos": 126,
+      "n_frames_total": 1101600,
+      "models": [
+        "MediaPipe_Full",
+        "MoveNet_MultiPose",
+        "YOLOv8_Nano",
+        "MediaPipe_Lite",
+        "MediaPipe_Heavy",
+        "MoveNet_SP_Lightning",
+        "MoveNet_SP_Thunder",
+        "YOLOv8_Small",
+        "YOLOv8_Medium"
+      ]
+    },
+    "valid_n_rows": 1036615,
+    "summary_valid": [
+      {
+        "model": "MoveNet_MultiPose",
+        "mean_nmpjpe": 10.516326715568798,
+        "median_nmpjpe": 9.850278436542323,
+        "std_nmpjpe": 4.659938247234305,
+        "n_frames": 119439
+      },
+      {
+        "model": "YOLOv8_Medium",
+        "mean_nmpjpe": 10.85754813620686,
+        "median_nmpjpe": 10.013969836724607,
+        "std_nmpjpe": 4.862139344692365,
+        "n_frames": 114591
+      },
+      {
+        "model": "YOLOv8_Small",
+        "mean_nmpjpe": 11.433383981096162,
+        "median_nmpjpe": 10.26943521320385,
+        "std_nmpjpe": 5.580373411719095,
+        "n_frames": 116009
+      },
+      {
+        "model": "MediaPipe_Heavy",
+        "mean_nmpjpe": 11.513732980600059,
+        "median_nmpjpe": 10.585991099657754,
+        "std_nmpjpe": 5.71330964171062,
+        "n_frames": 119630
+      },
+      {
+        "model": "MediaPipe_Full",
+        "mean_nmpjpe": 12.528106602630674,
+        "median_nmpjpe": 11.25619008059946,
+        "std_nmpjpe": 7.050054535452428,
+        "n_frames": 119729
+      },
+      {
+        "model": "YOLOv8_Nano",
+        "mean_nmpjpe": 12.766196325555258,
+        "median_nmpjpe": 11.22688239195844,
+        "std_nmpjpe": 6.725269775882775,
+        "n_frames": 115711
+      },
+      {
+        "model": "MoveNet_SP_Thunder",
+        "mean_nmpjpe": 13.32517788163879,
+        "median_nmpjpe": 11.933149264108222,
+        "std_nmpjpe": 7.409306759546159,
+        "n_frames": 117719
+      },
+      {
+        "model": "MediaPipe_Lite",
+        "mean_nmpjpe": 13.54196350188048,
+        "median_nmpjpe": 11.765545851094346,
+        "std_nmpjpe": 7.841478438269147,
+        "n_frames": 119392
+      },
+      {
+        "model": "MoveNet_SP_Lightning",
+        "mean_nmpjpe": 14.972331397938998,
+        "median_nmpjpe": 12.826043630530725,
+        "std_nmpjpe": 10.716348797692492,
+        "n_frames": 94395
+      }
+    ]
+  },
+  "coco": {
+    "metadata": {
+      "dataset": "COCO val2017",
+      "timestamp": "2026-04-12T15:49:49.347464",
+      "source": "repaired from existing coco_results.csv",
+      "models": [
+        "MediaPipe",
+        "MediaPipe_Heavy",
+        "MediaPipe_Lite",
+        "MoveNet",
+        "MoveNet_SP_Lightning",
+        "MoveNet_SP_Thunder",
+        "YOLOv8",
+        "YOLOv8m",
+        "YOLOv8s"
+      ],
+      "confidence": 0.5,
+      "max_images": null,
+      "total_rows": 12470,
+      "valid_rows": 10426,
+      "n_images": 1519,
+      "variants_included": true,
+      "single_person_rows": 6003,
+      "multi_person_rows": 6467
+    },
+    "valid_n_rows": 10426,
+    "summary_valid": [
+      {
+        "model": "YOLOv8m",
+        "mean_nmpjpe": 10.149702727719777,
+        "median_nmpjpe": 7.633964599933011,
+        "std_nmpjpe": 9.742090401589703,
+        "n_frames": 1326
+      },
+      {
+        "model": "YOLOv8s",
+        "mean_nmpjpe": 10.880735243161212,
+        "median_nmpjpe": 8.098981444463869,
+        "std_nmpjpe": 10.433033855588686,
+        "n_frames": 1319
+      },
+      {
+        "model": "MoveNet_SP_Thunder",
+        "mean_nmpjpe": 12.007282340501861,
+        "median_nmpjpe": 7.999792295826673,
+        "std_nmpjpe": 12.691142317867119,
+        "n_frames": 1087
+      },
+      {
+        "model": "MoveNet",
+        "mean_nmpjpe": 12.439520477496504,
+        "median_nmpjpe": 8.714189733830226,
+        "std_nmpjpe": 12.022470238873932,
+        "n_frames": 1213
+      },
+      {
+        "model": "MoveNet_SP_Lightning",
+        "mean_nmpjpe": 12.625362661438682,
+        "median_nmpjpe": 8.491107639548003,
+        "std_nmpjpe": 12.568984972901863,
+        "n_frames": 821
+      },
+      {
+        "model": "YOLOv8",
+        "mean_nmpjpe": 13.688015214577696,
+        "median_nmpjpe": 10.058458057379669,
+        "std_nmpjpe": 12.50826735773789,
+        "n_frames": 1318
+      },
+      {
+        "model": "MediaPipe_Heavy",
+        "mean_nmpjpe": 15.078486901375642,
+        "median_nmpjpe": 8.715937626545125,
+        "std_nmpjpe": 17.41279612629294,
+        "n_frames": 1133
+      },
+      {
+        "model": "MediaPipe",
+        "mean_nmpjpe": 17.205292586478343,
+        "median_nmpjpe": 10.52118810863352,
+        "std_nmpjpe": 17.52310479977861,
+        "n_frames": 1101
+      },
+      {
+        "model": "MediaPipe_Lite",
+        "mean_nmpjpe": 20.067869619432127,
+        "median_nmpjpe": 12.8293829442627,
+        "std_nmpjpe": 18.958773249230127,
+        "n_frames": 1108
+      }
+    ]
+  },
+  "warnings": [
+    "Segmentation metadata maps 63 video/exercise pairs to 10 person_id clusters; thesis dataset-size claims should be reconciled before final writing."
+  ],
+  "notes": [
+    "This report is the provenance layer for thesis-facing numbers during the recovery process.",
+    "Legacy numbers under analysis/results or older markdown docs are historical context unless regenerated from evaluation_v2."
+  ]
+}

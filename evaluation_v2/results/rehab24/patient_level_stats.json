@@ -1,0 +1,116 @@
+{
+  "primary_inference_unit": "segmentation person_id cluster",
+  "primary_aggregation": "mean of per-video median NMPJPE within each segmentation person_id cluster",
+  "secondary_sensitivity_unit": "video",
+  "models": [
+    "MediaPipe",
+    "MoveNet",
+    "YOLOv8"
+  ],
+  "n_primary_clusters": 10,
+  "patient_level_summary": [
+    {
+      "model": "MoveNet",
+      "mean": 10.734497459365112,
+      "median": 10.852617901600205,
+      "std": 1.9360695255181173,
+      "n_clusters": 10
+    },
+    {
+      "model": "MediaPipe",
+      "mean": 11.741220348163345,
+      "median": 12.196420005133055,
+      "std": 1.8811176183007083,
+      "n_clusters": 10
+    },
+    {
+      "model": "YOLOv8",
+      "mean": 12.231527718296292,
+      "median": 12.78253519701487,
+      "std": 1.8647507521720494,
+      "n_clusters": 10
+    }
+  ],
+  "patient_level_pairwise": [
+    {
+      "model_a": "MediaPipe",
+      "model_b": "MoveNet",
+      "n_pairs": 10,
+      "mean_diff": 1.0067228887982327,
+      "median_diff": 0.8659766344286384,
+      "effect_size_dz": 1.479931786235456,
+      "ci_low": 0.6218043600981658,
+      "ci_high": 1.421014218837596,
+      "p_value": 0.001953125,
+      "p_value_holm": 0.005859375,
+      "level": "patient"
+    },
+    {
+      "model_a": "MediaPipe",
+      "model_b": "YOLOv8",
+      "n_pairs": 10,
+      "mean_diff": -0.49030737013294495,
+      "median_diff": -0.38635876321107343,
+      "effect_size_dz": -0.7885683955113886,
+      "ci_low": -0.8518650389094676,
+      "ci_high": -0.11941276921533236,
+      "p_value": 0.03515625,
+      "p_value_holm": 0.03515625,
+      "level": "patient"
+    },
+    {
+      "model_a": "MoveNet",
+      "model_b": "YOLOv8",
+      "n_pairs": 10,
+      "mean_diff": -1.4970302589311777,
+      "median_diff": -1.4271423020745955,
+      "effect_size_dz": -4.05212232067297,
+      "ci_low": -1.7098550862303306,
+      "ci_high": -1.2736215118938088,
+      "p_value": 0.001953125,
+      "p_value_holm": 0.005859375,
+      "level": "patient"
+    }
+  ],
+  "video_level_pairwise": [
+    {
+      "model_a": "MediaPipe",
+      "model_b": "MoveNet",
+      "n_pairs": 126,
+      "mean_diff": 1.1581918774725584,
+      "median_diff": 1.1403442964848463,
+      "effect_size_dz": 0.807152390746081,
+      "ci_low": 0.9139638561009066,
+      "ci_high": 1.4088455635478163,
+      "p_value": 1.999960000799984e-05,
+      "p_value_holm": 5.9998800023999525e-05,
+      "level": "video"
+    },
+    {
+      "model_a": "MediaPipe",
+      "model_b": "YOLOv8",
+      "n_pairs": 126,
+      "mean_diff": -0.35513185450925006,
+      "median_diff": -0.1773182219208298,
+      "effect_size_dz": -0.19754284468620695,
+      "ci_low": -0.6750874120994571,
+      "ci_high": -0.04564508247693894,
+      "p_value": 0.02897942041159177,
+      "p_value_holm": 0.02897942041159177,
+      "level": "video"
+    },
+    {
+      "model_a": "MoveNet",
+      "model_b": "YOLOv8",
+      "n_pairs": 126,
+      "mean_diff": -1.5133237319818091,
+      "median_diff": -1.1820676780338646,
+      "effect_size_dz": -0.9923866058338712,
+      "ci_low": -1.7818534952559943,
+      "ci_high": -1.2507810481844852,
+      "p_value": 1.999960000799984e-05,
+      "p_value_holm": 5.9998800023999525e-05,
+      "level": "video"
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+2026-04-04 12:57:18.246488: I tensorflow/core/util/port.cc:153] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+2026-04-04 12:57:21.678814: I tensorflow/core/util/port.cc:153] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+C:\Users\Eren\bachelor\.venv\Lib\site-packages\keras\src\export\tf2onnx_lib.py:8: FutureWarning: In the future `np.object` will be defined as the corresponding NumPy scalar.
+  if not hasattr(np, "object"):
+C:\Users\Eren\bachelor\.venv\Lib\site-packages\tensorflow\lite\python\interpreter.py:457: UserWarning:     Warning: tf.lite.Interpreter is deprecated and is scheduled for deletion in
+    TF 2.20. Please use the LiteRT interpreter from the ai_edge_litert package.
+    See the [migration guide](https://ai.google.dev/edge/litert/migration)
+    for details.
+    
+  warnings.warn(_INTERPRETER_DELETION_WARNING)
+INFO: Created TensorFlow Lite XNNPACK delegate for CPU.
+[MoveNet_SP_Lightning] Loading TFLite model...
+[MoveNet_SP_Lightning] Processing 126 videos...
+  [MoveNet_SP_Lightning] 20/126 | 66 FPS | ETA 94min
+  [MoveNet_SP_Lightning] 40/126 | 64 FPS | ETA 137min
+  [MoveNet_SP_Lightning] 60/126 | 64 FPS | ETA 100min
+  [MoveNet_SP_Lightning] 80/126 | 65 FPS | ETA 61min
+  [MoveNet_SP_Lightning] 100/126 | 65 FPS | ETA 33min
+  [MoveNet_SP_Lightning] 120/126 | 65 FPS | ETA 8min
+  [MoveNet_SP_Lightning] 126/126 | 44 FPS | ETA 0min
+[MoveNet_SP_Lightning] DONE in 163.2 min

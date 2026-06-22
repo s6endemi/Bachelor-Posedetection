@@ -1,0 +1,186 @@
+% =============================================================================
+\chapter{Discussion}
+\label{ch:discussion}
+% =============================================================================
+
+The discussion separates direct empirical findings from narrower interpretations and clearly marked open questions.
+
+
+% -----------------------------------------------------------------------------
+\section{Answering the Research Questions}
+\label{sec:rq-answers}
+% -----------------------------------------------------------------------------
+
+\paragraph{RQ1: How accurate and complete are mobile pose estimation models in the benchmark setting used here?}
+
+MoveNet achieved the lowest body-joint error among the three main models on REHAB24-6. This ranking holds both on the frame-level valid subset and on the primary subject-cluster aggregation. The paired cluster-level analysis further indicates that MoveNet outperformed both MediaPipe and YOLOv8 after Holm correction, while MediaPipe also outperformed YOLOv8. Detection completeness follows a different ordering: YOLOv8 produced full 12-joint detections most frequently, followed by MediaPipe and then MoveNet. Within the shared 12-joint benchmark space used here, the main comparison therefore separates accuracy from completeness rather than identifying one model as strongest on both dimensions.
+
+\paragraph{RQ2: How stable are predictions over time?}
+
+MoveNet also produced the lowest normalized frame-to-frame prediction displacement, followed by YOLOv8 and MediaPipe. The same tendency extends to the broader variant set, where all three MoveNet variants occupy the lowest-displacement range. The stability result therefore supports the same overall pattern rather than introducing a separate trade-off.
+
+\paragraph{RQ3: How robust are the models under suboptimal conditions?}
+
+The answer depends on the condition. For viewpoint change, MoveNet is the most robust of the three main models. For segmentation-defined multi-person frames, none of the models shows a large degradation after filtering. For the coach extreme-case subset, MediaPipe shows the lowest catastrophic-failure rate. These are distinct robustness regimes and should not be collapsed into a single scalar notion of ``multi-person robustness''.
+
+\paragraph{RQ4: How far do rankings transfer across benchmarks?}
+
+Transferability is limited rather than absent. Across the full nine-model set, the leading configuration changes between REHAB24-6 and COCO, and this shift persists when COCO is restricted to single-person images. Among the three main models, MoveNet remains strongest on both datasets, while MediaPipe and YOLOv8 swap order. Because the COCO comparison uses a different protocol from REHAB24-6, this result supports only bounded transferability under the present setup rather than a protocol-independent ranking claim.
+
+\paragraph{RQ5: What practical trade-offs and recommendations follow for mobile rehabilitation applications?}
+
+The practical answer is use-case dependent, but the overall pattern is clear. For body-joint-only analysis under CPU constraints, MoveNet MultiPose is the strongest default choice because it combines the best REHAB24-6 accuracy with the best main-model temporal stability and substantially higher throughput than MediaPipe Full. YOLOv8 remains attractive when full 12-joint coverage is especially important. MediaPipe remains relevant when richer native landmarks, simpler integration, or lower catastrophic failure in the coach extreme-case subset matter more than the best body-joint accuracy.
+
+
+% -----------------------------------------------------------------------------
+\section{Three Architectural Profiles}
+\label{sec:arch-comparison}
+% -----------------------------------------------------------------------------
+
+The three main models form three distinct architectural profiles rather than a simple best-to-worst ranking.
+
+\paragraph{YOLOv8: high-sensitivity one-stage detection.}
+YOLOv8 returns complete 12-joint detections most frequently and exposes multiple persons in 62\% of sampled coach frames. This makes it the most detection-complete of the three main models, but also the model most frequently forced into downstream person disambiguation under the coach extreme-case protocol. At the same time, it is less accurate than MoveNet on REHAB24-6 and less robust to viewpoint change.
+
+\paragraph{MoveNet: low-exposure bottom-up profile.}
+MoveNet combines the strongest REHAB24-6 body-joint accuracy with the lowest main-model prediction displacement and substantially higher throughput than MediaPipe Full. In the coach subset it exposes multiple persons in only 16\% of sampled frames, making it the most conservative model in terms of secondary-person frequency. Yet this conservative exposure does not translate into the lowest coach outlier rate, which is why MoveNet's coach-scene behavior cannot be reduced to simple person-count frequency.
+
+\paragraph{MediaPipe: filtered top-down profile.}
+MediaPipe occupies an intermediate position in raw secondary-person exposure but the lowest catastrophic-failure rate in coach scenes. It is slower than MoveNet and less accurate on the evaluated 12-joint body benchmark, but its coach-scene failure profile differs from both alternatives. It is therefore not the general winner, but it remains a distinct deployment profile with different strengths and weaknesses.
+
+\paragraph{Failure-mode signature.}
+Section~\ref{sec:failure-modes} decomposes each model's failure frames into four categories. The dominant category for each model is consistent with the design logic of its architectural paradigm: MediaPipe's top-down commit-then-predict pipeline aligns with Keypoint-Displacement (confident misprediction in otherwise clean frames); MoveNet's bottom-up per-keypoint confidence aligns with Confidence-Collapse (graceful degradation with many joints filtered out); YOLOv8's one-stage coupling of detection and pose aligns with Missing-Detection (no subject, no pose). This correspondence is observational rather than mechanistic. Each paradigm is represented by a single model family in our evaluation, so we cannot separate paradigm-level effects from training data, confidence-calibration choices, or landmark definitions. We note the correspondence as a plausible hypothesis for future work rather than a proven causal mechanism.
+
+
+% -----------------------------------------------------------------------------
+\section{Cross-Profile Interpretation of Multi-Person Behavior}
+\label{sec:selection-discussion}
+% -----------------------------------------------------------------------------
+
+The central interpretive result of the thesis emerges only when all three architectural profiles are considered together. Detection count alone does not explain coach-scene robustness.
+
+The MediaPipe--YOLOv8 comparison is partially consistent with detection-level behavior. YOLOv8 exposes two or more persons in 62\% of sampled coach frames, compared with 23\% for MediaPipe. This creates more opportunities for downstream misassignment, and Figure~\ref{fig:coach-detection-comparison} is consistent with that interpretation: the same frame yields a single MediaPipe pose and multiple YOLOv8 detections.
+
+The MediaPipe--MoveNet comparison is different. MoveNet exposes multiple persons in only 16\% of sampled coach frames---even fewer than MediaPipe's 23\%---yet its coach-scene outlier rate is still higher. Detection counts therefore do not account for this difference. The residual mechanism must lie beyond simple secondary-person frequency, potentially in candidate retention, thresholding, or post-detection selection behavior. Panel~(c) of Figure~\ref{fig:coach-detection-comparison} illustrates one such instance, where MoveNet detects both persons but its largest-area selection places the native bounding box on the therapist rather than on the patient. This is precisely a selection-stage mechanism: detection is not the bottleneck in that frame. The current framework does not expose those internal states, so this mechanism cannot be localized further.
+
+The MoveNet--YOLOv8 comparison makes the same point from another angle. The two models differ by roughly a factor of four in secondary-person detection frequency (16\% vs.\ 62\%), yet their coach-scene outlier rates are nearly identical (13.8\% vs.\ 13.9\%). The combined evidence from all three pairings therefore rules out a simple monotonic relationship between ``how often additional persons are exposed'' and ``how often coach-scene failures occur''.
+
+This is the strongest mechanistic conclusion that the present data support. Part of the MediaPipe--YOLOv8 difference is consistent with detection-level behavior; the MediaPipe--MoveNet difference remains only partially explained; and the full three-model comparison shows that detection count alone is insufficient as a global explanation of coach-scene robustness.
+
+
+% -----------------------------------------------------------------------------
+\section{Hip-Specific Interpretation}
+\label{sec:hip-discussion}
+% -----------------------------------------------------------------------------
+
+The hip sensitivity analysis provides a clear model-specific result. MediaPipe's hip-region error is substantially higher than that of MoveNet and YOLOv8, and removing the hip joints reduces the MediaPipe--MoveNet gap from 2.01 percentage points to 1.21 percentage points. The remaining gap shows that the hip joints are not the only source of difference, but they account for a large share of it.
+
+This pattern is consistent with a landmark-definition mismatch rather than a uniform degradation of MediaPipe's full-body predictions. MediaPipe does not underperform uniformly across all regions; the discrepancy is concentrated in a structurally specific part of the skeleton. That makes a body-model or landmark-definition explanation more plausible than a generic ``lower quality'' explanation, although the current evidence remains indirect.
+
+
+% -----------------------------------------------------------------------------
+\section{Cross-Dataset Interpretation}
+\label{sec:crossdataset-discussion}
+% -----------------------------------------------------------------------------
+
+Across the nine-model set, the ranking shift is real, and it persists even when COCO is restricted to single-person images. Crowded scenes alone do not appear sufficient to explain the shift.
+
+At the same time, the comparison is protocol-bound. COCO differs from REHAB24-6 in target matching and visibility handling, so the result does not justify a blanket claim that standard benchmarks are invalid for rehabilitation-oriented deployment. What it does justify is a narrower conclusion: benchmark rankings transfer only partially under the evaluation protocol used here. In particular, the strongest REHAB24-6 configuration is not the strongest COCO configuration, and vice versa.
+
+Among the three main models, the cross-dataset shift is also more nuanced than the full nine-model view. MoveNet remains the strongest of the three on both datasets, while MediaPipe and YOLOv8 swap order between REHAB24-6 and COCO. This supports limited transferability rather than wholesale benchmark failure.
+
+
+% -----------------------------------------------------------------------------
+\section{Comparison with Related Work}
+\label{sec:literature-comparison}
+% -----------------------------------------------------------------------------
+
+\paragraph{REHAB24-6 benchmark studies.}
+\v{C}ernek et al.~\cite{cernek2025rehab246} introduced REHAB24-6 and evaluated selected pose-estimation methods on the same benchmark, but did not include MoveNet and did not analyze temporal stability, coach-scene failure behavior, or the interaction between person exposure and wrong-person failures. The present thesis extends that benchmark work in all three respects.
+
+\paragraph{Clinical movement analysis.}
+Rode et al.~\cite{rode2025assessment} evaluated a larger set of pose-estimation models for clinical movement analysis. Our work is narrower in model scope but deeper in deployment-oriented characterization: it adds mobile-specific speed--accuracy trade-offs, frame-to-frame prediction-displacement analysis, and explicit coach-scene failure analysis. The two perspectives are therefore complementary.
+
+\paragraph{Viewpoint effects.}
+Prior work already established that viewpoint affects HPE performance~\cite{aguilarortega2023uco, baldinger2025viewing}. The present thesis confirms that result for mobile models and further shows that viewpoint sensitivity, detection completeness, and coach-scene failure behavior do not collapse into a single robustness ranking.
+
+\paragraph{Mobile model comparisons.}
+Previous mobile HPE comparisons focused mainly on speed and general benchmark accuracy~\cite{jo2022comparative, chung2022comparative}. The contribution here is not simply that three popular models were compared again, but that they were compared under a more decision-relevant set of dimensions for rehabilitation-oriented deployment.
+
+
+% -----------------------------------------------------------------------------
+\section{Practical Recommendations}
+\label{sec:recommendations}
+% -----------------------------------------------------------------------------
+
+The recommendations follow directly from the bounded claims above.
+
+\paragraph{Default choice for body-joint analysis.}
+If the application uses only the shared body-joint skeleton and runs under CPU constraints, MoveNet MultiPose is the strongest default among the three main models. It achieved the lowest REHAB24-6 error, the lowest main-model prediction displacement, and much higher throughput than MediaPipe Full.
+
+\paragraph{When speed dominates.}
+If throughput is the dominant constraint and some loss in body-joint accuracy is acceptable, MoveNet\_SP\_Lightning is the fastest evaluated configuration by a wide margin. It should be chosen only when that speed gain matters more than its weaker REHAB24-6 accuracy.
+
+\paragraph{When detection completeness dominates.}
+If downstream processing depends strongly on obtaining all 12 evaluated joints, YOLOv8 remains attractive because it produces complete detections most frequently. That benefit should be weighed against its weaker viewpoint robustness and its higher coach-scene failure rate relative to MediaPipe.
+
+\paragraph{When richer landmark output matters.}
+MediaPipe remains attractive for applications that benefit from richer native landmarks or simpler API integration. Its body-joint benchmark performance is weaker than MoveNet's, but its coach extreme-case failure rate is lower and its native anatomical output is broader.
+
+\paragraph{Deployment guidance.}
+Applications should provide frontal camera-position guidance, monitor for secondary-person interference, and surface quality warnings when predictions become incomplete or unstable. The results suggest that these deployment decisions can matter as much as the model choice itself.
+
+
+% -----------------------------------------------------------------------------
+\section{Limitations}
+\label{sec:limitations}
+% -----------------------------------------------------------------------------
+
+Several limitations bound the interpretation of these results.
+
+\paragraph{Benchmark population.}
+The central limitation is the benchmark itself. REHAB24-6 contains healthy adult volunteers rather than a real patient cohort. Although the recordings are physiotherapist-guided and exercise-specific, they do not capture the full movement variability, compensatory behavior, or impairment-specific patterns of clinical home-rehabilitation populations. The dataset authors explicitly note that the inclusion of real patient data would provide substantially greater clinical relevance. The current conclusions should therefore be read as evidence from a rehabilitation-oriented benchmark, not as direct clinical validation.
+
+\paragraph{Primary inferential unit.}
+The repository-state subject aggregation relies on the segmentation metadata \texttt{person\_id}, yielding 10 primary subject clusters. This is a defensible in-repo clustering variable, but it remains a small inferential basis. The cluster-level statistics are much stronger than treating frames as independent observations, yet they are still bounded by a limited number of subjects.
+
+\paragraph{Coach extreme-case subset.}
+Only five c17 views form the coach subset, and the mechanistic interpretation relies on external behavior rather than internal detector traces. This is sufficient to distinguish the MediaPipe--YOLOv8 and MediaPipe--MoveNet cases, but not to fully localize the residual mechanism behind the latter.
+
+\paragraph{Frame-independent evaluation.}
+All models were evaluated frame-independently by design. This isolates model-level behavior, but it also means that the reported person-switch and temporal-stability values describe unsmoothed outputs and should be interpreted as upper-bound failure characteristics rather than as the performance of a fully engineered deployment pipeline.
+
+\paragraph{Temporal-stability proxy.}
+The frame-to-frame prediction-displacement metric does not subtract ground-truth motion. It is useful for comparing how much the predicted trajectories move under the shared protocol, but it cannot isolate model noise from real subject motion or from model smoothing.
+
+\paragraph{Cross-dataset protocol differences.}
+The COCO comparison uses a different protocol from REHAB24-6, including target matching and visibility filtering. The ranking shift is therefore informative about limited transferability under the present protocol, but it is not a clean causal estimate of domain shift.
+
+\paragraph{CPU-only benchmark.}
+The inference benchmark was conducted on CPU-only desktop hardware. Relative rankings are useful for deployment trade-offs, but mobile-device acceleration may change absolute latency and possibly the ordering of some variants.
+
+\paragraph{2D evaluation only.}
+The thesis evaluates 2D joint localization. Many rehabilitation applications ultimately depend on 3D joint angles, depth, or movement quality in 3D. The present results therefore characterize an important prerequisite, but not the full downstream assessment problem.
+
+
+% -----------------------------------------------------------------------------
+\section{Future Work}
+\label{sec:future-work}
+% -----------------------------------------------------------------------------
+
+Real patient validation is the most important next step. Four further directions follow.
+
+\paragraph{Real patient cohorts.}
+The most important extension is validation on actual rehabilitation patients. That is the clearest path to greater clinical relevance and to testing whether the present ranking persists under impairment-specific movement patterns.
+
+\paragraph{Mechanistic multi-person analysis.}
+Future work should log or expose internal candidate detections, detector thresholds, and retained instances for multi-person scenes. That would allow the MediaPipe--MoveNet asymmetry to be studied directly rather than inferred from external behavior.
+
+\paragraph{Standardized cross-dataset protocol.}
+A cleaner cross-dataset evaluation would align target matching and visibility handling across benchmarks. This would strengthen claims about ranking transferability and reduce protocol-induced ambiguity.
+
+\paragraph{Mobile-device deployment.}
+The speed benchmark should be repeated on representative smartphones or tablets, ideally with hardware-specific delegates enabled. That would convert the current relative CPU comparison into a directly deployment-facing benchmark.
+
+\paragraph{Uniform temporal post-processing.}
+All models were evaluated frame-independently. A subsequent study could apply the same temporal post-processing or tracking layer to all models and quantify how much of the remaining instability is reducible at pipeline level.

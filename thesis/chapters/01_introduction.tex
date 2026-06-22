@@ -1,0 +1,81 @@
+% =============================================================================
+\chapter{Introduction}
+\label{ch:introduction}
+% =============================================================================
+
+
+% -----------------------------------------------------------------------------
+\section{Motivation}
+\label{sec:motivation}
+% -----------------------------------------------------------------------------
+
+Home-based physiotherapy depends on patients performing exercises correctly and regularly outside the clinic. Adherence is a persistent problem: prior work reports substantial non-adherence with physiotherapy treatment and exercise programs~\cite{jack2010barriers}. Non-adherence prolongs recovery, increases healthcare costs, and reduces clinical outcomes. Telerehabilitation aims to improve access and adherence through remote monitoring and feedback~\cite{simmich2024telerehab}.
+
+Human pose estimation (HPE) offers a practical basis for such feedback. By estimating body-joint positions from RGB images, smartphone-based systems can monitor exercise execution without marker-based motion capture or other specialized equipment~\cite{hellsten2021potential}. That reduces cost and equipment overhead for home-based rehabilitation.
+
+Among the practical model families for this setting are MediaPipe Pose, MoveNet, and YOLOv8-Pose. They represent different architectural trade-offs in accuracy, speed, and robustness. Standard benchmarks do not cover these conditions, so the comparison has to be made on rehabilitation-style data.
+
+
+% -----------------------------------------------------------------------------
+\section{Problem Statement}
+\label{sec:problem-statement}
+% -----------------------------------------------------------------------------
+
+Standard pose estimation benchmarks such as COCO~\cite{lin2014coco} and MPII~\cite{andriluka2014mpii} use diverse but generally favorable imagery. They are valuable for architecture comparison but do not cover the constraints of rehabilitation-oriented deployment:
+
+\begin{itemize}
+  \item \textbf{Camera positioning.} Patients exercising at home often do not position themselves frontally to the camera, producing oblique or lateral body orientations that may increase self-occlusion.
+  \item \textbf{Multi-person interference.} Family members, caregivers, or a supervising therapist may enter the camera's field of view, requiring the model to correctly identify and retain the target subject.
+  \item \textbf{Temporal stability.} Applications that provide real-time movement feedback depend on temporally stable predictions. Frame-to-frame instability degrades the user experience even when average accuracy is acceptable.
+  \item \textbf{Resource constraints.} Patients typically lack dedicated GPU hardware, so models must achieve usable throughput on CPU.
+\end{itemize}
+
+Existing evaluations cover these constraints only partially. In the literature reviewed in Chapter~\ref{ch:background}, MoveNet has not been compared on a rehabilitation-oriented benchmark with motion-capture ground truth. Prior work also does not combine body-joint accuracy, viewpoint sensitivity, multi-person behavior, normalized frame-to-frame prediction displacement, intra-family speed--accuracy trade-offs, and cross-dataset ranking transfer in one mobile-model evaluation. This thesis addresses that gap by evaluating three main models and six variants on REHAB24-6 and comparing their rankings on COCO val2017 under a different evaluation protocol.
+
+
+% -----------------------------------------------------------------------------
+\section{Research Questions}
+\label{sec:research-questions}
+% -----------------------------------------------------------------------------
+
+The thesis addresses five research questions:
+
+\begin{description}
+  \item[RQ1:] How accurate are mobile pose estimation models on a rehabilitation-oriented benchmark with motion-capture ground truth, and how complete are their keypoint detections on the shared body-joint skeleton?
+  \item[RQ2:] How temporally stable are their predictions, measured through normalized frame-to-frame prediction displacement?
+  \item[RQ3:] How robust are the models under suboptimal conditions, specifically body orientation relative to the camera and multi-person interference?
+  \item[RQ4:] How far do rankings obtained on the rehabilitation-oriented benchmark transfer to a standard large-scale benchmark, given that the two evaluations share the 12-joint skeleton but use dataset-specific protocols?
+  \item[RQ5:] What practical trade-offs and recommendations follow for mobile rehabilitation-oriented deployment?
+\end{description}
+
+
+% -----------------------------------------------------------------------------
+\section{Contributions}
+\label{sec:contributions}
+% -----------------------------------------------------------------------------
+
+The main contributions are:
+
+\begin{enumerate}
+  \item \textbf{Rehabilitation-oriented evaluation of three mobile model families.} We evaluate MediaPipe, MoveNet, and YOLOv8 on REHAB24-6 under a shared protocol and extend the comparison to six additional family variants.
+
+  \item \textbf{Multi-metric benchmark.} We evaluate body-joint accuracy, normalized frame-to-frame prediction displacement, viewpoint sensitivity, multi-person behavior, detection completeness, and CPU inference speed within one comparison framework.
+
+  \item \textbf{Subject-cluster inference.} We aggregate REHAB24-6 results to subject-level clusters and report paired permutation tests with Holm correction and bootstrap confidence intervals; frame-level and video-level analyses are kept as sensitivity checks.
+
+  \item \textbf{Cross-dataset transferability analysis.} We compare all nine variants on COCO val2017 under an auxiliary protocol and quantify how rankings shift between the rehabilitation-oriented benchmark and a standard benchmark.
+
+  \item \textbf{Decomposition of multi-person behavior.} We analyze multi-person behavior through two complementary subsets: a segmentation-defined multi-person subset covering the full benchmark and a coach extreme-case subset of five c17 recordings with a prominently visible therapist.
+
+  \item \textbf{Failure-mode taxonomy.} We introduce a four-category taxonomy of per-frame failures---Missing-Detection, Confidence-Collapse, Multi-Person-Confusion, Keypoint-Displacement---and show that each main model is dominated by a distinct category consistent with its architectural paradigm.
+
+  \item \textbf{Deployment guidance.} We derive model-selection recommendations for CPU-based rehabilitation-oriented deployment from the combined accuracy, stability, robustness, completeness, and latency results.
+\end{enumerate}
+
+
+% -----------------------------------------------------------------------------
+\section{Thesis Structure}
+\label{sec:thesis-structure}
+% -----------------------------------------------------------------------------
+
+The remainder of this thesis is organized as follows. Chapter~\ref{ch:background} reviews human pose estimation, the evaluated model families, the evaluation metrics, and the related work. Chapter~\ref{ch:methodology} defines the datasets, model configurations, metrics, filtering rules, and statistical procedures. Chapter~\ref{ch:implementation} describes the evaluation pipeline. Chapter~\ref{ch:results} reports the empirical findings. Chapter~\ref{ch:discussion} interprets the results and derives practical implications. Chapter~\ref{ch:conclusion} summarizes the main findings and the next steps toward clinical validation.

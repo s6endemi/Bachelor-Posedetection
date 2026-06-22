@@ -1,0 +1,24 @@
+{
+  "dataset": "COCO val2017",
+  "timestamp": "2026-04-12T15:49:49.347464",
+  "source": "repaired from existing coco_results.csv",
+  "models": [
+    "MediaPipe",
+    "MediaPipe_Heavy",
+    "MediaPipe_Lite",
+    "MoveNet",
+    "MoveNet_SP_Lightning",
+    "MoveNet_SP_Thunder",
+    "YOLOv8",
+    "YOLOv8m",
+    "YOLOv8s"
+  ],
+  "confidence": 0.5,
+  "max_images": null,
+  "total_rows": 12470,
+  "valid_rows": 10426,
+  "n_images": 1519,
+  "variants_included": true,
+  "single_person_rows": 6003,
+  "multi_person_rows": 6467
+}

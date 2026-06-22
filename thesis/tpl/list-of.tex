@@ -1,0 +1,22 @@
+\clearpage
+\let\origaddvspace\addvspace
+\renewcommand{\addvspace}[1]{}
+    \iftotalfigures%
+        \phantomsection%
+        \listoffigures%
+        \addcontentsline{toc}{chapter}{\listfigurename}%
+        \clearpage
+    \fi%
+    \iftotaltables%
+        \phantomsection%
+        \listoftables%
+        \addcontentsline{toc}{chapter}{\listtablename}%
+        \clearpage
+    \fi%
+    \iftotallstlistings%
+        \phantomsection%
+        \lstlistoflistings%
+        \addcontentsline{toc}{chapter}{\lstlistlistingname}%
+        \clearpage
+    \fi%
+ \renewcommand{\addvspace}[1]{\origaddvspace{#1}}

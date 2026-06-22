@@ -1,0 +1,38 @@
+{
+  "sample_step": 10,
+  "coach_videos": [
+    {
+      "video_id": "PM_010",
+      "exercise": "Ex3",
+      "camera": "c17"
+    },
+    {
+      "video_id": "PM_011",
+      "exercise": "Ex3",
+      "camera": "c17"
+    },
+    {
+      "video_id": "PM_108",
+      "exercise": "Ex3",
+      "camera": "c17"
+    },
+    {
+      "video_id": "PM_119",
+      "exercise": "Ex3",
+      "camera": "c17"
+    },
+    {
+      "video_id": "PM_121",
+      "exercise": "Ex3",
+      "camera": "c17"
+    }
+  ],
+  "thresholds": {
+    "mediapipe_min_detection_confidence": 0.1,
+    "mediapipe_num_poses": 5,
+    "movenet_score_threshold": 0.1,
+    "yolo_box_confidence_threshold": 0.3
+  },
+  "frame_csv": "C:\\Users\\Eren\\bachelor\\evaluation_v2\\results\\coach_detection_counts_frames.csv",
+  "summary_csv": "C:\\Users\\Eren\\bachelor\\evaluation_v2\\results\\coach_detection_counts_summary.csv"
+}

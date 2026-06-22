@@ -1,0 +1,161 @@
+=== Evaluation v2: REHAB24-6 ===
+  Predictions: C:\Users\Eren\bachelor\data\predictions
+  GT 2D:       C:\Users\Eren\bachelor\data\gt_2d
+  Output:      C:\Users\Eren\bachelor\evaluation_v2\results\rehab24
+  Confidence:  0.5
+  Frame step:  3
+
+Found 126 video-GT pairs
+Loaded segmentation: 130 entries, 277 multi-person segments
+
+  [1/126] Ex1/PM_000-c17 — 435 frames × 3 models
+  [2/126] Ex1/PM_000-c18 — 435 frames × 3 models
+  [3/126] Ex1/PM_001-c17 — 1006 frames × 3 models
+  [4/126] Ex1/PM_001-c18 — 1006 frames × 3 models
+  [5/126] Ex1/PM_002-c17 — 666 frames × 3 models
+  [6/126] Ex1/PM_002-c18 — 666 frames × 3 models
+  [7/126] Ex1/PM_012-c17 — 801 frames × 3 models
+  [8/126] Ex1/PM_012-c18 — 801 frames × 3 models
+  [9/126] Ex1/PM_016-c17 — 681 frames × 3 models
+  [10/126] Ex1/PM_016-c18 — 681 frames × 3 models
+  [11/126] Ex1/PM_023-c17 — 570 frames × 3 models
+  [12/126] Ex1/PM_023-c18 — 570 frames × 3 models
+  [13/126] Ex1/PM_024-c17 — 702 frames × 3 models
+  [14/126] Ex1/PM_024-c18 — 702 frames × 3 models
+  [15/126] Ex1/PM_032-c17 — 984 frames × 3 models
+  [16/126] Ex1/PM_032-c18 — 984 frames × 3 models
+  [17/126] Ex1/PM_039-c17 — 1268 frames × 3 models
+  [18/126] Ex1/PM_039-c18 — 1268 frames × 3 models
+  [19/126] Ex1/PM_101-c17 — 436 frames × 3 models
+  [20/126] Ex1/PM_101-c18 — 436 frames × 3 models
+  [21/126] Ex1/PM_109-c17 — 1742 frames × 3 models
+  [22/126] Ex1/PM_109-c18 — 1742 frames × 3 models
+  [23/126] Ex1/PM_114-c17 — 1723 frames × 3 models
+  [24/126] Ex1/PM_114-c18 — 1723 frames × 3 models
+  [25/126] Ex1/PM_122-c17 — 1247 frames × 3 models
+  [26/126] Ex1/PM_122-c18 — 1247 frames × 3 models
+  [27/126] Ex2/PM_003-c17 — 1596 frames × 3 models
+  [28/126] Ex2/PM_003-c18 — 1596 frames × 3 models
+  [29/126] Ex2/PM_004-c17 — 973 frames × 3 models
+  [30/126] Ex2/PM_004-c18 — 973 frames × 3 models
+  [31/126] Ex2/PM_013-c17 — 485 frames × 3 models
+  [32/126] Ex2/PM_013-c18 — 485 frames × 3 models
+  [33/126] Ex2/PM_014-c17 — 1750 frames × 3 models
+  [34/126] Ex2/PM_014-c18 — 1750 frames × 3 models
+  [35/126] Ex2/PM_025-c17 — 867 frames × 3 models
+  [36/126] Ex2/PM_025-c18 — 867 frames × 3 models
+  [37/126] Ex2/PM_026-c17 — 763 frames × 3 models
+  [38/126] Ex2/PM_026-c18 — 763 frames × 3 models
+  [39/126] Ex2/PM_033-c17 — 1292 frames × 3 models
+  [40/126] Ex2/PM_033-c18 — 1292 frames × 3 models
+  [41/126] Ex2/PM_040-c17 — 1157 frames × 3 models
+  [42/126] Ex2/PM_040-c18 — 1157 frames × 3 models
+  [43/126] Ex2/PM_102-c17 — 1665 frames × 3 models
+  [44/126] Ex2/PM_102-c18 — 1665 frames × 3 models
+  [45/126] Ex2/PM_110-c17 — 1923 frames × 3 models
+  [46/126] Ex2/PM_110-c18 — 1923 frames × 3 models
+  [47/126] Ex2/PM_115-c17 — 1394 frames × 3 models
+  [48/126] Ex2/PM_115-c18 — 1394 frames × 3 models
+  [49/126] Ex2/PM_123-c17 — 1462 frames × 3 models
+  [50/126] Ex2/PM_123-c18 — 1462 frames × 3 models
+  [51/126] Ex3/PM_010-c17 — 1357 frames × 3 models
+  [52/126] Ex3/PM_010-c18 — 1357 frames × 3 models
+  [53/126] Ex3/PM_011-c17 — 545 frames × 3 models
+  [54/126] Ex3/PM_011-c18 — 545 frames × 3 models
+  [55/126] Ex3/PM_030-c17 — 729 frames × 3 models
+  [56/126] Ex3/PM_030-c18 — 729 frames × 3 models
+  [57/126] Ex3/PM_031-c17 — 545 frames × 3 models
+  [58/126] Ex3/PM_031-c18 — 545 frames × 3 models
+  [59/126] Ex3/PM_044-c17 — 538 frames × 3 models
+  [60/126] Ex3/PM_044-c18 — 538 frames × 3 models
+  [61/126] Ex3/PM_045-c17 — 365 frames × 3 models
+  [62/126] Ex3/PM_045-c18 — 365 frames × 3 models
+  [63/126] Ex3/PM_107-c17 — 454 frames × 3 models
+  [64/126] Ex3/PM_107-c18 — 454 frames × 3 models
+  [65/126] Ex3/PM_108-c17 — 943 frames × 3 models
+  [66/126] Ex3/PM_108-c18 — 943 frames × 3 models
+  [67/126] Ex3/PM_119-c17 — 506 frames × 3 models
+  [68/126] Ex3/PM_119-c18 — 506 frames × 3 models
+  [69/126] Ex3/PM_121-c17 — 569 frames × 3 models
+  [70/126] Ex3/PM_121-c18 — 569 frames × 3 models
+  [71/126] Ex4/PM_005-c17 — 903 frames × 3 models
+  [72/126] Ex4/PM_005-c18 — 903 frames × 3 models
+  [73/126] Ex4/PM_006-c17 — 348 frames × 3 models
+  [74/126] Ex4/PM_006-c18 — 348 frames × 3 models
+  [75/126] Ex4/PM_018-c17 — 430 frames × 3 models
+  [76/126] Ex4/PM_018-c18 — 430 frames × 3 models
+  [77/126] Ex4/PM_020-c17 — 414 frames × 3 models
+  [78/126] Ex4/PM_020-c18 — 414 frames × 3 models
+  [79/126] Ex4/PM_027-c17 — 1369 frames × 3 models
+  [80/126] Ex4/PM_027-c18 — 1369 frames × 3 models
+  [81/126] Ex4/PM_034-c17 — 370 frames × 3 models
+  [82/126] Ex4/PM_034-c18 — 370 frames × 3 models
+  [83/126] Ex4/PM_035-c17 — 412 frames × 3 models
+  [84/126] Ex4/PM_035-c18 — 412 frames × 3 models
+  [85/126] Ex4/PM_041-c17 — 858 frames × 3 models
+  [86/126] Ex4/PM_041-c18 — 858 frames × 3 models
+  [87/126] Ex4/PM_103-c17 — 1147 frames × 3 models
+  [88/126] Ex4/PM_103-c18 — 1147 frames × 3 models
+  [89/126] Ex4/PM_111-c17 — 1197 frames × 3 models
+  [90/126] Ex4/PM_111-c18 — 1197 frames × 3 models
+  [91/126] Ex4/PM_116-c17 — 780 frames × 3 models
+  [92/126] Ex4/PM_116-c18 — 780 frames × 3 models
+  [93/126] Ex4/PM_124-c17 — 1109 frames × 3 models
+  [94/126] Ex4/PM_124-c18 — 1109 frames × 3 models
+  [95/126] Ex5/PM_021-c17 — 949 frames × 3 models
+  [96/126] Ex5/PM_021-c18 — 949 frames × 3 models
+  [97/126] Ex5/PM_028-c17 — 1213 frames × 3 models
+  [98/126] Ex5/PM_028-c18 — 1213 frames × 3 models
+  [99/126] Ex5/PM_037-c17 — 749 frames × 3 models
+  [100/126] Ex5/PM_037-c18 — 749 frames × 3 models
+  [101/126] Ex5/PM_042-c17 — 1205 frames × 3 models
+  [102/126] Ex5/PM_042-c18 — 1205 frames × 3 models
+  [103/126] Ex5/PM_104-c17 — 1065 frames × 3 models
+  [104/126] Ex5/PM_104-c18 — 1065 frames × 3 models
+  [105/126] Ex5/PM_112-c17 — 1482 frames × 3 models
+  [106/126] Ex5/PM_112-c18 — 1482 frames × 3 models
+  [107/126] Ex5/PM_125-c17 — 1050 frames × 3 models
+  [108/126] Ex5/PM_125-c18 — 1050 frames × 3 models
+  [109/126] Ex6/PM_008-c17 — 1731 frames × 3 models
+  [110/126] Ex6/PM_008-c18 — 1731 frames × 3 models
+  [111/126] Ex6/PM_022-c17 — 919 frames × 3 models
+  [112/126] Ex6/PM_022-c18 — 919 frames × 3 models
+  [113/126] Ex6/PM_029-c17 — 1030 frames × 3 models
+  [114/126] Ex6/PM_029-c18 — 1030 frames × 3 models
+  [115/126] Ex6/PM_038-c17 — 825 frames × 3 models
+  [116/126] Ex6/PM_038-c18 — 825 frames × 3 models
+  [117/126] Ex6/PM_043-c17 — 1155 frames × 3 models
+  [118/126] Ex6/PM_043-c18 — 1155 frames × 3 models
+  [119/126] Ex6/PM_105-c17 — 1096 frames × 3 models
+  [120/126] Ex6/PM_105-c18 — 1096 frames × 3 models
+  [121/126] Ex6/PM_113-c17 — 1300 frames × 3 models
+  [122/126] Ex6/PM_113-c18 — 1300 frames × 3 models
+  [123/126] Ex6/PM_118-c17 — 821 frames × 3 models
+  [124/126] Ex6/PM_118-c18 — 821 frames × 3 models
+  [125/126] Ex6/PM_126-c17 — 1134 frames × 3 models
+  [126/126] Ex6/PM_126-c18 — 1134 frames × 3 models
+
+Total rows: 367,200
+Computing temporal jitter...
+Saved: C:\Users\Eren\bachelor\evaluation_v2\results\rehab24\frame_results.csv
+Saved: C:\Users\Eren\bachelor\evaluation_v2\results\rehab24\jitter_results.csv
+Saved: C:\Users\Eren\bachelor\evaluation_v2\results\rehab24\metadata.json
+
+=== Quick Summary ===
+  MediaPipe   : NMPJPE 12.6% (median 11.3%, n=120,817)
+  MoveNet     : NMPJPE 10.6% (median 9.9%, n=120,525)
+  YOLOv8      : NMPJPE 12.9% (median 11.3%, n=116,790)
+
+  Multi-person frames: 32,185 (9.0%)
+Traceback (most recent call last):
+  File "C:\Users\Eren\bachelor\evaluation_v2\evaluate.py", line 537, in <module>
+    main()
+  File "C:\Users\Eren\bachelor\evaluation_v2\evaluate.py", line 533, in main
+    run_evaluation(dataset, eval_cfg)
+  File "C:\Users\Eren\bachelor\evaluation_v2\evaluate.py", line 503, in run_evaluation
+    print(f"    {model:12s}: clean {c:.1f}% -> multi-person {mp:.1f}% (+{(mp/c-1)*100:.0f}%)")
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python312\Lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\u2192' in position 30: character maps to <undefined>

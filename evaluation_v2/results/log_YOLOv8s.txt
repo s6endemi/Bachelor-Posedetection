@@ -1,0 +1,24 @@
+=== REHAB24-6 Variant Inference: YOLOv8s ===
+  Output: C:\Users\Eren\bachelor\data\predictions_variants\YOLOv8s
+  Videos: 126
+  Loading YOLOv8s...
+  Model loaded.
+
+  [10/126] PM_016-c18 -> ok, 681 frames, 0.5 FPS, ETA 604min
+  [20/126] PM_101-c18 -> ok, 436 frames, 6.2 FPS, ETA 440min
+  [30/126] PM_004-c18 -> ok, 973 frames, 4.6 FPS, ETA 450min
+  [40/126] PM_033-c18 -> ok, 1292 frames, 7.7 FPS, ETA 453min
+  [50/126] PM_123-c18 -> ok, 1462 frames, 9.7 FPS, ETA 383min
+  [60/126] PM_044-c18 -> ok, 538 frames, 11.0 FPS, ETA 297min
+  [70/126] PM_121-c18 -> ok, 569 frames, 10.8 FPS, ETA 226min
+  [80/126] PM_027-c18 -> ok, 1369 frames, 11.0 FPS, ETA 171min
+  [90/126] PM_111-c18 -> ok, 1197 frames, 11.1 FPS, ETA 126min
+  [100/126] PM_037-c18 -> ok, 749 frames, 11.0 FPS, ETA 87min
+  [110/126] PM_008-c18 -> ok, 1731 frames, 10.9 FPS, ETA 53min
+  [120/126] PM_105-c18 -> ok, 1096 frames, 11.0 FPS, ETA 19min
+  [126/126] PM_126-c18 -> ok, 1134 frames, 10.5 FPS, ETA 0min
+
+=== Done: YOLOv8s ===
+  Total: 122,400 frames in 399.7 min
+  Speed: 8.9 FPS (mean)
+  Output: C:\Users\Eren\bachelor\data\predictions_variants\YOLOv8s

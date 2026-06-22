@@ -1,0 +1,88 @@
+% !TeX program = latexmk
+\documentclass[11pt,a4paper,chapterprefix=false,openright,bibliography=totocnumbered,headinclude,cleardoublepage=empty,singlespacing=true,DIV=12]{scrreprt}
+\usepackage[utf8]{inputenc}
+\input{cfg.tex}
+\input{tpl/pkg.tex}
+
+% ---------------------------------------------------------- Add .bib files here
+\addbibresource{bibliography.bib}
+% \addbibresource{second.bib}
+
+% ---------------------------------------------------------- Add glossary files here
+\loadglsentries{defns}
+% \loadglsentries{second_defns}
+
+\begin{document}
+% ------------------------------------------------------------------------- Init
+\hypersetup{pageanchor=false}
+\sloppy
+\KOMAoption{twoside}{false}
+\KOMAoption{BCOR}{0mm}
+\input{tpl/titlepage.tex}
+\ifthenelse{\equal{\thesisprintingstyle}{twoside}}{
+    \KOMAoption{twoside}{true}
+    \cleardoublepage
+}{}
+\KOMAoption{BCOR}{\thesisbcor}
+\pagestyle{scrheadings}
+\setcounter{page}{7}
+\pagenumbering{gobble}
+\pagenumbering{roman}
+
+% ------------------------------------------------------------------ Declaration
+\ifthenelse{\equal{\thesisprintdeclaration}{true}}{%
+\input{tpl/declaration.tex}
+\cleardoublepage
+}{}%
+
+% ----------------------------------------------------------------------- Thanks
+\ifthenelse{\equal{\thesisthankyou}{true}}{
+    \cleardoublepage
+    \chapter*{\ifthenelse{\equal{\thesislanguage}{german}}%
+        {Danksagung}%
+        {Acknowledgement}}
+    \input{thanks.tex}}
+    \cleardoublepage
+{}%
+
+% --------------------------------------------------------------------- Abstract
+\ifthenelse{\equal{\thesisabstract}{true}}{
+    \cleardoublepage
+    \chapter*{\ifthenelse{\equal{\thesislanguage}{german}}%
+        {Kurzfassung}%
+        {Abstract}}
+    \input{abstract.tex}
+    %\vspace*{\fill}
+    %\thispagestyle{empty}
+}{}
+\clearpage
+
+% ----------------------------------------------------------------------- Tables
+\addtocontents{toc}{\vskip -2em}
+\addtocontents{lof}{\vskip -2em}
+\addtocontents{lot}{\vskip -2em}
+\begingroup
+\let\clearpage\relax
+\ifthenelse{\equal{\thesistableofcontents}{true}}{\tableofcontents}{}
+\ifthenelse{\equal{\thesistableposition}{end}}{}{\input{tpl/list-of.tex}}
+
+\endgroup
+\cleardoublepage
+\pagenumbering{arabic}
+\hypersetup{pageanchor=true}
+
+% ------------------------------------------------------------ Add Chapters here
+\input{content.tex}
+
+\printbibliography[heading=bibintoc,title=\reftitle]
+
+
+%------------------------------------------------------------------ Table of ...
+\ifthenelse{\equal{\thesistableposition}{end}}{\input{tpl/list-of.tex}}{}
+
+% ----------------------------------------------------------------- Glossary
+\ifthenelse{\equal{\thesisprintglossary}{true}}{
+    \glsnogroupskiptrue \printnoidxglossaries
+}{}
+
+\end{document}
