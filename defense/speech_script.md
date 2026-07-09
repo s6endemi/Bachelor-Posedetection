@@ -1,11 +1,9 @@
-# Mündliches Skript — Defense (FINAL v2, 24 Folien, Ziel ~26–27 Min)
+# Mündliches Skript — Defense (FINAL v3, 25 Folien, Ziel ~27 Min)
 
-> WICHTIG nach dem Testlauf (20–22 Min): LANGSAMER sprechen — nach jedem Folientitel
-> 2 Sek. Pause, an Signposts absetzen, auf Figuren wirklich ZEIGEN. Das Skript ist
-> auf ~120 Wörter/Min kalkuliert.
-> Lern-Methode: NICHT Wort für Wort. Pro Folie: (1) ersten Satz wörtlich, (2) Beats
-> als Reihenfolge, (3) Opener/Closer/Signposts wörtlich. [Klammern] = Regieanweisung.
-> NEU markiert: die 5 Erweiterungen gegenüber Deinem Testlauf.
+> Nach Testlauf (20–22 Min): LANGSAMER sprechen — nach jedem Folientitel 2 Sek.
+> Pause, an Signposts absetzen, auf Figuren ZEIGEN. Kalkuliert auf ~120 Wörter/Min.
+> Lern-Methode: pro Folie ersten Satz wörtlich + Beats; Opener/Closer/Signposts
+> wörtlich. [Klammern] = Regieanweisung.
 
 ---
 
@@ -82,9 +80,9 @@ others.
 person centers as a heatmap, and gets the keypoints from those centers. No cropping,
 no second network. The cost stays the same no matter how many people are in the
 image. The weak spot: grouping — deciding which keypoints belong to which person.
-[NEU] Internally, MoveNet refines each keypoint with full-image heatmaps, weighted
-towards the person center — a detail that becomes relevant in the multi-person
-analysis later.
+Internally, MoveNet refines each keypoint with full-image heatmaps, weighted towards
+the person center — a detail that becomes relevant in the multi-person analysis
+later.
 
 [rechts] **YOLOv8-Pose is one-stage.** It is an object detector with an extra pose
 head. Every detection comes out with its box and all 17 keypoints — in one shot. Fast
@@ -108,7 +106,7 @@ the camera image. So for every frame, I know where every joint **really** was. T
 green dots are the 12 joints all models share — shoulders, elbows, wrists, hips,
 knees, ankles. Those 12 are what I evaluate.
 
-[NEU] Of course, this ground truth has its own error sources — marker placement, the
+Of course, this ground truth has its own error sources — marker placement, the
 skeleton model, the projection into the image. That is exactly why I use it as a fair
 comparison basis: all models are measured against the same reference.
 
@@ -156,9 +154,8 @@ exact — all 1024 combinations can be checked directly.
 
 Because I compare three model pairs, **Holm correction** keeps the false-alarm rate
 under control. And **bootstrap confidence intervals** add the second half of the
-answer: not just whether a difference is real, but how large it is. [NEU] As a
-sensitivity check, I repeated the analysis on the video level — the ranking stays the
-same.
+answer: not just whether a difference is real, but how large it is. As a sensitivity
+check, I repeated the analysis on the video level — the ranking stays the same.
 
 **That completes the setup: six dimensions, nine model configurations, one fixed
 protocol. Now to the results.**
@@ -179,7 +176,7 @@ So on accuracy: a clear winner.
 
 ---
 
-## Folie 10 — NEU: Accuracy by body region (1:15)
+## Folie 10 — Accuracy by body region (1:15)
 
 One level deeper: where do these errors actually sit? [Tabelle] Not uniformly.
 MediaPipe is actually the **best** model on the shoulders. MoveNet leads everywhere
@@ -269,7 +266,7 @@ rates: 9, 14, and 14 percent.
 
 ---
 
-## Folie 17 — The obvious explanation fails (2:20) [LANGSAM — Höhepunkt]
+## Folie 17 — The obvious explanation fails (2:00) [LANGSAM — Höhepunkt]
 
 These numbers point to one central finding of this thesis. The intuitive explanation
 would be: **models that detect the second person more often also fail more often.**
@@ -290,13 +287,21 @@ mechanism must sit deeper — at the selection stage, in how candidates are kept
 chosen. Since the models do not expose those internals, the thesis names the
 candidates and leaves the mechanism open.
 
-[NEU] One more honest detail: one of the five coach videos — PM 010 — breaks all
-three models, including MediaPipe. So no selection strategy is perfect; MediaPipe is
-only the most robust of the three.
+---
+
+## Folie 18 — One video breaks all three (0:50)
+
+One more honest look at those five coach videos — they are not all equal. [Tabelle]
+In four of them, MediaPipe stays below 40 percent error, while the others fail. But
+one video — PM 010 — breaks **all three** models, including MediaPipe: over 65
+percent error everywhere.
+
+So: no selection strategy is perfect. MediaPipe is the most robust of the three — but
+not immune.
 
 ---
 
-## Folie 18 — Failure signatures (1:30)
+## Folie 19 — Failure signatures (1:30)
 
 The failure analysis completes the picture. I classified every failure frame into
 four categories — and each model is dominated by a **different** one. MediaPipe's
@@ -313,27 +318,26 @@ separate architecture from training data. But as a hypothesis, it is consistent.
 
 ---
 
-## Folie 19 — The COCO check (1:00)
+## Folie 20 — The COCO check (1:00)
 
-Before the synthesis, one external check. REHAB24-6 was my primary benchmark — but I
-wanted to know: would a standard benchmark have given the same answer? So all nine
-variants also ran on COCO — as an auxiliary comparison, for accuracy only.
+One final check before the synthesis. REHAB24-6 was my main benchmark. But would a
+standard benchmark give the same answer? To test that, all nine variants also ran on
+COCO — as an auxiliary comparison, accuracy only.
 
-The answer: only partially. [Slopegraph] The REHAB winner, MoveNet MultiPose, drops
-to rank 4 on COCO. YOLOv8 Medium leads there. MediaPipe drops sharply. Among the
-three main models the picture is more stable: MoveNet stays first on both, MediaPipe
-and YOLOv8 swap places.
+The answer: only partially. [Slopegraph] MoveNet MultiPose — the REHAB winner — drops
+to rank 4 on COCO. There, YOLOv8 Medium leads. MediaPipe drops sharply. The three
+main models are more stable: MoveNet stays first on both. MediaPipe and YOLOv8 swap
+places.
 
-One caveat: the two evaluations differ not only in the data, but also in the protocol
-— on COCO there is no designated patient, so predictions are matched to the annotated
-person. That means I cannot cleanly separate how much of the shift comes from the
-domain and how much from the protocol. So the careful conclusion is: rankings
-transfer only partially — which also means a COCO leaderboard alone would not have
-found the results of this thesis.
+One caveat. The two evaluations differ in the data — and in the protocol. On COCO
+there is no patient, so predictions are simply matched to the annotated person. That
+means I cannot say how much of the shift is the domain, and how much is the protocol.
+The careful conclusion: **rankings transfer only partially.** And that also means: a
+COCO leaderboard alone would not have found these results.
 
 ---
 
-## Folie 20 — Three profiles (1:45)
+## Folie 21 — Three profiles (1:45)
 
 **So — back to the original question: which model for home rehabilitation?**
 
@@ -351,7 +355,7 @@ lose.**
 
 ---
 
-## Folie 21 — Decision guide (1:00)
+## Folie 22 — Decision guide (1:00)
 
 As practical guidance: for body-joint analysis on CPU, **MoveNet MultiPose is the
 default choice.** If you need the complete skeleton, take YOLOv8. If coach robustness
@@ -364,28 +368,29 @@ deployment decisions matter as much as the model itself.**
 
 ---
 
-## Folie 22 — Limitations (1:15)
+## Folie 23 — Limitations (1:15)
 
-Of course, these results live inside clear boundaries — and each boundary points to
-a next step. The most important one: my subjects were ten healthy adults in
-motion-capture suits. Real patients look and move differently — older, different
-body shapes, everyday clothing instead of tight suits, sometimes a walking aid, and
-compensatory movement patterns. All of that can shift pose accuracy itself. So
-validation on real patients is the first item of future work.
+Of course, these results have clear boundaries. And each boundary points to a next
+step.
 
-Second: I evaluated raw, frame-independent outputs — an upper bound on failures; a
-deployed system with smoothing would look better. The natural follow-up is applying
-the same temporal smoothing to all models. Third: the COCO comparison runs under a
-different protocol — a standardized cross-dataset protocol would sharpen that
-conclusion. And fourth: this is 2D — real rehabilitation assessment ultimately needs
-3D joint angles.
+The most important one: my subjects were ten healthy adults, in motion-capture suits.
+Real patients look different and move differently. They are older. Different body
+shapes. Everyday clothing. Sometimes a walking aid. And compensatory movements. All
+of that can shift pose accuracy itself. So the first item of future work is
+validation with real patients.
 
-But these are not oversights — they are scope decisions, and each one defines the
-next experiment.
+Second: I evaluated raw outputs, frame by frame. That is an upper bound on failures —
+a real system with smoothing would only look better. The follow-up: apply the same
+smoothing to all models. Third: the COCO comparison used a different protocol — a
+standardized protocol would sharpen it. And fourth: this is 2D. Real assessment
+ultimately needs 3D joint angles.
+
+**These are not oversights. They are scope decisions — and each one defines the next
+experiment.**
 
 ---
 
-## Folie 23 — Conclusion (0:45)
+## Folie 24 — Conclusion (0:45)
 
 Two findings to take home. **First:** on a rehabilitation benchmark with
 motion-capture ground truth, MoveNet MultiPose is the strongest CPU default — most
@@ -395,7 +400,7 @@ explain coach robustness, and each architecture fails in its own characteristic 
 
 ---
 
-## Folie 24 — Thank you (0:15 + Closer)
+## Folie 25 — Thank you (0:15 + Closer)
 
 **So — can you trust a mobile pose estimator in a living room? Yes. But which one
 depends on what your application cannot afford to lose. MoveNet MultiPose is the
@@ -405,12 +410,11 @@ real patients. Thank you.**
 
 ---
 
-# Lern-Anleitung (angepasst nach Testlauf)
+# Lern-Anleitung (Stand: Vorabend)
 
-1. **Tempo ist Hebel Nr. 1:** Testlauf war 20–22 Min → Du sprichst zu schnell. Nach
-   jedem Folientitel 2 Sek. Pause; an den zwei Signposts (Folie 8, Folie 13) bewusst
-   absetzen; auf Figuren zeigen. Ziel im Training: 26–27 Min.
-2. **Die 5 NEU-Passagen** einmal extra üben (Folie 5, 6, 8, 10, 17) — alles Stoff,
-   den Du aus den MDs kennst (Hip-Herleitung ist Deine eigene!).
-3. **Timing-Steuerung live:** Zu lang? Kürzen bei Folie 11, 19, 21 — NIE bei 17
-   (Dreisatz) oder 20 (Profile).
+1. **Tempo = Hebel Nr. 1:** nach jedem Folientitel 2 Sek. Pause; Signposts (Ende
+   Folie 8, Ende Folie 13) absetzen; auf Figuren zeigen. Ziel: ~27 Min im Training.
+2. **Neu seit Deinem Testlauf:** Folie 10 (Per-Joint/Hips) und Folie 18 (PM_010) sind
+   NEUE Folien; dazu je 1 neuer Satz auf Folie 5, 6, 8. Einmal extra üben.
+3. **Timing live:** Zu lang? Kürzen bei Folie 11, 20, 22 — NIE bei 17 (Dreisatz) oder
+   21 (Profile). Folie 18 kann notfalls komplett übersprungen werden (ein Klick).

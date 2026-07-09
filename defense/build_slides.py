@@ -563,6 +563,38 @@ notes(s, "Der staerkste interpretative Befund — bewusst eine NEGATIVE Konklusi
          "Panel (c) der Coach-Figur zeigt den Selection-Fehler konkret.")
 
 # =============================================================================
+# 18 — Coach pro Video (PM_010: Ehrlichkeits-Beat)
+# =============================================================================
+s = slide()
+title(s, "One video breaks all three — no selection strategy is perfect")
+coach_rows_main = [
+    ("Coach sequence", "MediaPipe", "MoveNet", "YOLOv8"),
+    ("PM_010-c17", "81.9%", "70.7%", "69.9%"),
+    ("PM_011-c17", "38.0%", "59.7%", "66.2%"),
+    ("PM_108-c17", "17.2%", "46.2%", "51.1%"),
+    ("PM_119-c17", "24.1%", "74.0%", "73.0%"),
+    ("PM_121-c17", "30.9%", "60.3%", "75.3%"),
+]
+y = Inches(1.8)
+for i, (a, b, c, d) in enumerate(coach_rows_main):
+    bold = i == 0
+    pm10 = a == "PM_010-c17"
+    fill = RGBColor(0xE3, 0xEB, 0xF7) if i == 0 else (RGBColor(0xFB, 0xE9, 0xE7) if pm10 else (LIGHT if i % 2 else RGBColor(0xFF, 0xFF, 0xFF)))
+    box(s, Inches(0.7), y, Inches(2.9), Inches(0.68), fill, None, [(a, {"size": 15, "bold": bold or pm10})], align=PP_ALIGN.LEFT)
+    box(s, Inches(3.6), y, Inches(2.2), Inches(0.68), fill, None, [(b, {"size": 15, "bold": bold or pm10, "color": MP_GREEN if not bold else DARK})])
+    box(s, Inches(5.8), y, Inches(2.2), Inches(0.68), fill, None, [(c, {"size": 15, "bold": bold or pm10, "color": MN_RED if not bold else DARK})])
+    box(s, Inches(8.0), y, Inches(2.2), Inches(0.68), fill, None, [(d, {"size": 15, "bold": bold or pm10, "color": YL_BLUE if not bold else DARK})])
+    y += Inches(0.68)
+text(s, Inches(10.45), Inches(1.9), Inches(2.5), Inches(3.5), [
+    ("Mean coach NMPJPE per video (before outlier cut)", {"size": 13, "color": GRAY}),
+], size=13)
+text(s, Inches(0.7), Inches(6.15), Inches(12.0), Inches(1.1), [
+    ("In four of five videos, MediaPipe stays below 40% — but PM_010 breaks all three models. MediaPipe is the most robust — not immune.", {"bold": True, "size": 16, "color": ACCENT}),
+], size=15)
+notes(s, "Ehrlichkeits-Beat: PM_010 = Gegenprobe, bricht ALLE drei (MP 81.9!). MediaPipe nur most robust, "
+         "nicht immun. Zahlen VOR Outlier-Cut (failure regime). n=5, deskriptiv — benannte Limitation.")
+
+# =============================================================================
 # 17 — Failure modes
 # =============================================================================
 s = slide()
