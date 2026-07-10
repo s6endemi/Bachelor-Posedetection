@@ -322,6 +322,32 @@ Nuancen: (1) trotzdem deployment-relevant (anatomische Winkel!), (2) systematisc
 prinzipiell kalibrierbar (eigene ungetestete Erweiterung, NICHT Thesis-Claim).
 Nicht proaktiv auf Hauptfolie — Backup B8 + diese Antwort drillen.
 
+**☐ B8-Follow-up: "But YOLO also has 14.6% hip error — closer to MediaPipe than to MoveNet. Doesn't that kill your definition-mismatch story?"**
+**Heißt einfach:** „Wenn COCO-trainiertes YOLO auch 14,6 % Hüftfehler hat — ist die Hüfte dann nicht einfach für alle schwer, statt MediaPipe-Definitions-Problem?"
+> "Good observation — but the argument is about the profile, not the absolute value.
+> Hips are hard for every model: the joint center sits inside the body, under
+> clothing. YOLO's hip error fits its general pattern — it is less accurate
+> everywhere, and its worst region is actually the wrists, not the hips. MediaPipe
+> is different: it is the best model on the shoulders, and then suddenly five
+> points worse than MoveNet on the hips. Relative to its own average, MediaPipe's
+> hip error is about 1.3 times its normal level — YOLO's only about 1.1. One model
+> breaking out of its own profile at one structurally specific joint — that is what
+> points to a definition mismatch. And it is the only model with its own landmark
+> scheme. How I would test it: measure the direction of the error — a definition
+> mismatch is a systematic offset, so MediaPipe's hip predictions should be shifted
+> consistently in the same direction relative to the MoCap center. Random
+> inaccuracy would scatter around zero. That test is not in the thesis — which is
+> why I call the evidence indirect."
+
+Fundament (die 3 Halte-Zahlen, direkt aus Tabelle 5.x ableitbar): Hüfte vs. eigener
+Gesamtschnitt = MoveNet 11,28/10,52 ≈ **1,07×** · YOLO 14,59/12,77 ≈ **1,14×** ·
+MP 16,72/12,53 ≈ **1,33×**. Killer-Fakt: YOLOs schlechteste Region = WRISTS (16,25),
+nicht Hips → YOLOs Hüfte ist Teil des generellen "distale Joints schwer"-Musters.
+MoveNet–YOLO-Hüftabstand (≈3,3pp) ≈ ihr Abstand überall sonst → nichts
+Hüft-Spezifisches zwischen den beiden COCO-Modellen zu erklären. Test-Extension:
+signierte Offset-Richtung (konsistent = Mismatch, Streuung um 0 = Rauschen);
+konstanter Offset wäre sogar wegkalibrierbar.
+
 ## C. Confound- & Ground-Truth-Fragen (Gall/Krüger-Kaliber — Session 10.7.)
 
 > Diese Fragen greifen die METHODE an, nicht die Zahlen. Muster immer gleich:

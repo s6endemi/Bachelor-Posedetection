@@ -154,7 +154,9 @@ the same ground truth" · Skelett-Konventionen → B4 · warum nicht 3D-GT → A
 Modellwahl/RTMPose → §2 Z.1–2 · Fine-Tuning → §2 Z.3 · Healthy Volunteers → §2 Z.5 ·
 Frame-independent → §2 Z.6 · Statistik-Tiefe → §2 Z.12 + B1 · Hip → §6 + B8 (+
 Trainingsdaten: MoveNet/YOLO auf COCO-Hüften trainiert, BlazePose eigenes Schema, GT =
-MoCap-Gelenkzentrum → 3 Konventionen) · Handy-30-FPS → GPU-Delegate + Tracking-Modus
+MoCap-Gelenkzentrum → 3 Konventionen; „YOLO hat doch auch 14,6 %!"-Konter → B8-Follow-up:
+PROFIL statt Absolutwert — Hüfte/eigener Schnitt: MP 1,33× vs. YOLO 1,14× vs. MoveNet
+1,07×; YOLOs Worst = Wrists 16,25) · Handy-30-FPS → GPU-Delegate + Tracking-Modus
 vs. mein CPU-only + IMAGE-Modus; monotone Latenz-Treppen = Beleg sauberer Messung ·
 Paradigma-Confound → §6 Z.1 · „5 Coach-Videos genug?" → benannte Limitation,
 deskriptiv, PM_010-Gegenprobe · „Warum nicht einfach MoveNet krönen?" → Deployment
