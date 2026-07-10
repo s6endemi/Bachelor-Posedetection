@@ -27,10 +27,13 @@
 - Varianten Lite/Full/Heavy = unterschiedliche Backbone-Kapazität, gleiche TFLite-Runtime.
 
 **Gall-Fragen dazu:**
-- *"Why does MediaPipe only ever output one person?"* → Die klassische
-  MediaPipe-Pose-Lösung ist eine Single-Person-Pipeline: ein Detektor wählt die
-  dominante Person, der Estimator verarbeitet genau eine ROI (num_poses konfigurierbar
-  in der neuen Tasks-API, aber Standard-Setup ist 1 — in der Thesis dokumentiert).
+- *"Why does MediaPipe only ever output one person?"* → ⚠️ VORSICHT — für die Thesis
+  stimmt die Prämisse NICHT: Das Thesis-Setup nutzt die Tasks-API multi-person-fähig
+  (bis zu 5 Posen, Modell-Tabelle Kap. 3), die Selektion läuft über largest torso
+  extent, und im Coach-Subset meldet MediaPipe in 23 % der Frames 2+ Personen — sonst
+  gäbe es die Exposure-Zahl gar nicht. Richtig ist nur: die Legacy-Lösung war
+  single-person, und auch die Tasks-API liefert KEINE Bounding-Boxes (daher die
+  Torso-Extent-Heuristik statt Box-Fläche).
 - *"What do the visibility scores mean?"* → Gelernte Wahrscheinlichkeit, dass der
   Landmark im Bild sichtbar/präsent ist — kein kalibriertes Konfidenzmaß.
 
@@ -102,8 +105,8 @@ Fehlerbilder (z. B. Keypoint-Displacement vs. Confusion) — als Hypothese nutzb
   COCO-AP = Mittel über OKS-Schwellen 0.50:0.05:0.95.
 - **PCKh@0.5**: korrekt, wenn Distanz < 0.5 · Kopfsegmentlänge (MPII).
 - **MPJPE**: (1/N)·Σ‖p̂ᵢ − pᵢ‖₂.
-- **NMPJPE (Thesis)**: MPJPE / Referenz-Körpersegmentlänge (exakte Definition Section
-  3.5 — bei Kapitel 3 verifizieren und hier eintragen). ⚠️ Nicht mit dem
+- **NMPJPE (Thesis)**: MPJPE / **GT-Torsolänge** (Schulter-Mittelpunkt zu
+  Hüft-Mittelpunkt, aus der Ground Truth, per Frame) × 100 %. ⚠️ Nicht mit dem
   3D-NMPJPE (scale-aligned) aus der Human3.6M-Literatur verwechseln — bei Nachfrage
   aktiv abgrenzen.
 

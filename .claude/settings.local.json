@@ -86,7 +86,10 @@
       "WebFetch(domain:www.informatik.uni-bonn.de)",
       "PowerShell($out = \"C:\\\\Users\\\\Eren\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\C--Users-Eren-bachelor\\\\5e6804b2-2b1c-4329-bd5e-c438439ee089\\\\scratchpad\\\\slides_png\"; New-Item -ItemType Directory -Force $out | Out-Null; $pp = New-Object -ComObject PowerPoint.Application; $pres = $pp.Presentations.Open\\(\"C:\\\\Users\\\\Eren\\\\bachelor\\\\defense\\\\defense_slides.pptx\", $true, $false, $false\\); $pres.SaveAs\\($out, 18\\); $pres.Close\\(\\); $pp.Quit\\(\\); Get-ChildItem $out | Measure-Object | Select-Object -ExpandProperty Count)",
       "PowerShell(Get-ChildItem -Recurse defense | Where-Object { -not $_.PSIsContainer } | Sort-Object Length -Descending | Select-Object -First 20 @{N='SizeMB';E={[math]::Round\\($_.Length/1MB,2\\)}}, FullName; \\(Get-ChildItem -Recurse defense | Where-Object { -not $_.PSIsContainer } | Measure-Object Length -Sum\\).Sum/1MB)",
-      "PowerShell(git *)"
+      "PowerShell(git *)",
+      "Bash(py -c ' *)",
+      "Bash(pip install *)",
+      "Bash(PYTHONIOENCODING=utf-8 python *)"
     ]
   }
 }

@@ -15,8 +15,12 @@
    - **Resource constraints** — CPU-only, keine GPU zu Hause
    → Diese vier mappen 1:1 auf die Evaluationsdimensionen (Story-Gerüst für Folien!).
 3. **Gap (zweiteilig, gescoped):** (a) MoveNet nie auf Reha-Benchmark mit MoCap-GT
-   verglichen; (b) keine Arbeit kombiniert alle sechs Dimensionen in einer
+   verglichen; (b) keine Arbeit kombiniert diese Dimensionen in einer
    Mobile-Model-Evaluation. Absicherung: *"In the literature reviewed in Chapter 2"*.
+   ⚠️ NICHT verwechseln: Die Gap-Aufzählung in Kap. 1.2 (Accuracy, Viewpoint,
+   Multi-Person, Displacement, **Intra-Family-Trade-offs, Cross-Dataset-Transfer**) ist
+   NICHT dieselbe Liste wie die sechs Evaluationsdimensionen (dort stattdessen
+   **Completeness + CPU-Speed**). Bei „welche sechs?" die richtige Liste wählen.
 4. **5 Research Questions** — Merksatz: *how good (RQ1: accuracy+completeness), how
    stable (RQ2), how robust (RQ3: viewpoint+multi-person), does it transfer (RQ4:
    COCO), what to deploy (RQ5)*.

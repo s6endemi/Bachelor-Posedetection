@@ -39,7 +39,7 @@
 | Kein Fine-Tuning | MP+MoveNet = frozen TFLite ohne Trainings-Pipeline (nur YOLO tunebar = unfair); N=10 zu klein für Split; off-the-shelf IST die Deployment-Frage |
 | 2D statt 3D | Nur MP hat natives 3D (hüft-zentriert) → 3D-Vergleich unmöglich ohne Lifting-Confound; 2D = gemeinsamer Nenner |
 | Proxy-Benchmark (healthy) | Ziel = Joint-Lokalisierung, nicht Übungsbewertung; falsche Ausführungen im Datensatz → Bewegungsvielfalt abgedeckt; Lücke = Patienten-Appearance (Alter, Kleidung, Hilfsmittel) → Future Work #1 |
-| Frame-independent | Modelle, nicht Pipelines; YOLO hat kein natives Tracking → alles andere unfair; Werte = upper bound, Deployment nur besser |
+| Frame-independent | Modelle, nicht Pipelines; YOLO-**Netz** ohne temporales Processing (Ultralytics-Track = Pipeline-Schicht, bewusst ungenutzt) → einheitlich frame-weise; Werte = upper bound der Roh-Outputs (Tracking hätte eigene Fehlmodi: Wrong-Person-Lock) |
 | 12 Joints | kleinster anatomisch korrespondierender Nenner (33/17/26); GT hat keine Gesichts-Marker |
 | NMPJPE statt PCK/OKS | PCK verschluckt Fehlergröße; OKS braucht COCO-Sigmas + Segmentfläche (GT hat beides nicht); NMPJPE = volle Verteilung, skalenfrei, interpretierbar |
 | Joint-Filter 0.5 | Modelle liefern Konfidenz genau dafür; joint-level = datenerhaltend; identisch für alle; MP-Detection-0.1 = nur Eintrittshürde (Default 0.5 erzeugte vermeidbare Detection-Failures) |
@@ -80,7 +80,8 @@
 **B1** Statistik-Details · **B2** NMPJPE-Formel + Alternativen · **B3** Rotation/65°-
 Kalibrierung · **B4** Keypoint-Mapping · **B5** alle 9 Varianten (NMPJPE+FPS) ·
 **B6** COCO-Protokoll · **B7** Coach pro Video (PM_010!) · **B8** Per-Joint/Hips ·
-**B9** Architektur-Interna (BlazePose/MoveNet/YOLO)
+**B9** Architektur-Interna (BlazePose/MoveNet/YOLO) · **B10** Accuracy↔Completeness-
+Kopplung (= Antwort auf C1, die gefährlichste Frage)
 
 ## 5. RQ-Antworten in je 1 Zeile
 
@@ -114,6 +115,12 @@ Kalibrierung · **B4** Keypoint-Mapping · **B5** alle 9 Varianten (NMPJPE+FPS) 
   choice was …"*
 - Keine Ahnung: *"Fair question — I don't know with confidence. My expectation would
   be …, because …, and here is how I would test it."*
+- Vorschlag ist besser: *"Good point — I think you're right, X would be cleaner. I
+  chose Y because … Would it change the conclusion? I expect no, because it affects
+  all three models equally. A valuable follow-up."*
+- Vorschlag trifft ein Ergebnis: *"You're right — that could shift the absolute
+  numbers. What I can defend is the comparison, because the effect hits all three
+  models the same way. The clean check would be …"*
 - Frage unklar: *"Just to make sure I answer the right thing — do you mean … or …?"*
 - Denkpause: *"That's a good question — let me take that apart."*
 
@@ -152,3 +159,18 @@ vs. mein CPU-only + IMAGE-Modus; monotone Latenz-Treppen = Beleg sauberer Messun
 Paradigma-Confound → §6 Z.1 · „5 Coach-Videos genug?" → benannte Limitation,
 deskriptiv, PM_010-Gegenprobe · „Warum nicht einfach MoveNet krönen?" → Deployment
 ist mehrkriteriell, drei Profile SIND die Antwort.
+
+**NEU (Session 10.7., qa_catalog §C — Confound/GT-Kaliber):**
+Valid-Joints-Selektionseffekt auf Accuracy → **C1 (GEFÄHRLICHSTE)** · dito auf
+Stability + 10-Hz-Einwand → C2 · „MoveNet wirklich bottom-up?" → C3 ·
+Torso-Normalisierung/Rumpfbeuge → C4 · Oracle-/GT-Matching auf REHAB als Ablation →
+C5 · GT-Genauigkeit (Marker-Offset, cm vs. cm) → C6 · Projektion/Sync → C7 ·
+Multi-Person „−5 % = besser?" → C8 (composition, not causation) · Resolution/
+Trainingsdaten-Confound → C9 · Wilcoxon → C10 · Median-dann-Mean (+ Folie-10-Falle:
+Frame-Gap 2,01pp ≠ Cluster-Gap 1,01pp) → C11 · „Video-Level wo in der Thesis?" → C12
+(Antwort: Analyse-Artefakte, NICHT Kap. 5) · MP-0.1 vs. MoveNet out-of-the-box =
+inkonsistent? → C13 (Tor ≠ Richter: Hindernis entfernt, Messung nie angefasst) ·
+„Accuracy+Completeness kombinieren — wie?" → C14 (Sweep→Trade-off-Kurve ODER
+Miss-Penalty/PCK über alle 12 GT-Joints; Gewichtung = anwendungsabhängig → bewusst
+getrennt; Ausgang ehrlich offen).
+Merkregel §C: **zugeben → Vergleich hält → Extension benennen.**

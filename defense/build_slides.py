@@ -176,7 +176,7 @@ text(s, Inches(0.9), Inches(2.2), Inches(11.5), Inches(1.8), [
 ])
 text(s, Inches(0.9), Inches(4.1), Inches(11.5), Inches(2.4), [
     ("Bachelor Thesis Defense — Eren Demir", {"size": 20, "bold": True}),
-    ("Supervisor: Lars Doorenbos   ·   Second examiner: Prof. Dr. Jürgen Gall", {"size": 16, "color": GRAY}),
+    ("First examiner: Prof. Dr. Jürgen Gall   ·   Second examiner: Dr. Björn Krüger   ·   Advisor: Lars Doorenbos", {"size": 16, "color": GRAY}),
     ("University of Bonn — Institute of Computer Science, Computer Vision Group", {"size": 16, "color": GRAY}),
     ("July 2026", {"size": 16, "color": GRAY}),
 ])
@@ -250,6 +250,31 @@ for tag, q in rqs:
     y += Inches(1.02)
 notes(s, "Merkformel: how good, how stable, how robust, does it transfer, what to deploy. "
          "Jede RQ wird in der Discussion explizit beantwortet.")
+
+# =============================================================================
+# 5 — Scope der Evaluation (Umfangs-Zahlen)
+# =============================================================================
+s = slide()
+title(s, "The scope of this evaluation")
+contribs = [
+    ("9 model configurations", "three families, three variants each — one shared protocol"),
+    ("1.1 million CPU inference runs", "122,400 sampled frames × 9 configurations, plus COCO"),
+    ("6 quality dimensions, 2 benchmarks", "accuracy · stability · viewpoint · multi-person · completeness · speed — plus COCO transfer"),
+    ("3 landmark systems unified", "33, 17, and 26 joints mapped onto one shared 12-joint skeleton"),
+]
+cw2, ch2 = Inches(5.9), Inches(1.75)
+for i, (h, b) in enumerate(contribs):
+    x = Inches(0.5) + (i % 2) * (cw2 + Inches(0.45))
+    y = Inches(1.55) + (i // 2) * (ch2 + Inches(0.35))
+    box(s, x, y, cw2, ch2, LIGHT, None, [
+        (h, {"bold": True, "size": 18, "color": ACCENT}),
+        (b, {"size": 15}),
+    ], align=PP_ALIGN.LEFT)
+text(s, Inches(0.5), Inches(5.95), Inches(12.3), Inches(0.9),
+     [("Not a new model — a decision basis that did not exist before",
+       {"bold": True, "size": 18, "color": ACCENT})])
+notes(s, "Umfang konkret zeigen statt behaupten. 1.1 Mio = 122.400 x 9 (REHAB) + 1.519 x 9 (COCO). "
+         "Schlusssatz: not a new model - a decision basis. SKIPPBAR falls Zeitdruck.")
 
 # =============================================================================
 # 5 — Paradigmen
@@ -902,6 +927,21 @@ text(s, Inches(0.5), Inches(1.45), Inches(12.3), Inches(5.5), [
     ("YOLOv8-Pose", {"bold": True, "size": 17, "color": YL_BLUE}),
     ("Anchor-free one-stage detector (C2f blocks, decoupled head) extended with a pose head: per detection box + 17 keypoints (x, y, conf) in one pass; OKS-based keypoint loss. Ultralytics PyTorch runtime.", {"size": 14}),
 ], size=15)
+
+# B10 Accuracy-Completeness-Kopplung (Support fuer Q&A C1)
+s = backup("B10")
+title(s, "Backup: accuracy and completeness are coupled", ACCENT)
+text(s, Inches(0.5), Inches(1.5), Inches(12.3), Inches(5.3), [
+    ("Accuracy is computed on the joints that survive the 0.5 confidence filter — per model", {"size": 17, "bold": True}),
+    ("MoveNet:      10.52% NMPJPE   ·   38.2% full skeletons   ·   10.31 valid joints/frame", {"size": 16, "bold": True, "color": MN_RED}),
+    ("MediaPipe:   12.53% NMPJPE   ·   55.1% full skeletons   ·   10.72 valid joints/frame", {"size": 16, "color": MP_GREEN}),
+    ("YOLOv8:       12.77% NMPJPE   ·   79.1% full skeletons   ·   11.53 valid joints/frame", {"size": 16, "color": YL_BLUE}),
+    ("Same filter for all models — and deployment-realistic: an app consumes exactly the confident joints", {"size": 16}),
+    ("Against a pure selection story: MoveNet leads in 5 of 6 body regions and on all 6 exercises", {"size": 16}),
+    ("Clean check (extension): intersection analysis — score all models on jointly valid joints only; expected: same order, smaller gap", {"size": 16, "bold": True}),
+    ("Completeness is therefore reported as its own dimension — RQ1 deliberately separates the two", {"size": 15, "color": GRAY}),
+], size=16)
+notes(s, "Support fuer C1 (Valid-Joints-Selektionseffekt). Muster: zugeben -> Vergleich haelt -> Extension.")
 
 # ---- speichern ----
 out = os.path.join(DEF, "defense_slides.pptx")

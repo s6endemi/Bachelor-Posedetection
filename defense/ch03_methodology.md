@@ -135,7 +135,9 @@ Angriff: "Why not a mixed-effects model for repeated measures?" (Lars' historisc
 > permutation tests over all 1024 sign assignments, with Holm correction and percentile
 > bootstrap intervals. The test is exact at this sample size, makes no distributional
 > assumptions, and directly respects the dependency structure. Frame- and video-level
-> analyses are kept as sensitivity checks and agree with the cluster-level ranking."
+> analyses are kept as sensitivity checks; the frame-level ordering is reported in the
+> thesis, the video-level result lives in the analysis artifacts — same ranking, same
+> significance pattern."
 Follow-up *"minimal p-value with 10 clusters?"* → zweiseitig 2/1024 ≈ **0,002** —
 zeigen, dass Du das weißt!
 Follow-up *"10 Hz sampling — doesn't that alias fast motion in your jitter metric?"*
@@ -155,7 +157,7 @@ Follow-up *"your displacement metric confounds true motion"* →
 |---|---|
 | 12 Joints statt 17 COCO | GT hat keine Gesichts-Marker; Reha-relevant sind Extremitäten + Rumpf; kleinster gemeinsamer, anatomisch korrespondierender Nenner |
 | Torso-Länge als Normalisierung | GT-basiert (nicht prediction-abhängig), pro Frame, skalenfrei; Foreshortening betrifft alle Modelle identisch → Ranking stabil |
-| Frame-independent (IMAGE mode) | Modelle evaluieren, nicht Pipelines; YOLO hat ohnehin kein natives temporales Processing → jeder andere Modus wäre unfair; Ergebnisse = upper bound der Roh-Outputs; Kap.-6-Limitation |
+| Frame-independent (IMAGE mode) | Modelle evaluieren, nicht Pipelines; das YOLO-**Netz** hat kein temporales Processing (Ultralytics-Tracking = Pipeline-Schicht, bewusst nicht genutzt) → einheitlich frame-weise = fair; Ergebnisse = upper bound der Roh-Outputs; Kap.-6-Limitation |
 | Jeder 3. Frame (10 Hz) | reduziert Autokorrelation + Rechenkosten; Reha-Bewegungen langsam; identisch für alle Modelle |
 | Inference separat gebenchmarkt | isoliert Latenz von Data-Loading/Metrik-Berechnung; 50-Frame-Warm-up gegen Init-Artefakte; sequenziell gegen Resource Contention; native Runtimes = Deployment-Realismus |
 | Median pro Sequenz (nicht Mittel) | robust gegen Restausreißer innerhalb einer Sequenz |
